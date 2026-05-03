@@ -9053,6 +9053,171 @@ Local:   .claude/settings.local.json (niet in git)`}</Pre>
         </Card>
       </div>
 
+      <H2>Het 5-laags Agent Development Kit-model</H2>
+      <P theme={theme}>
+        Tot nu toe hebben we de bouwstenen los behandeld: CLAUDE.md, Skills, Hooks, Subagents, Plugins. Maar het echte mentale model — populair gemaakt door <em>leadgenman</em> op Instagram als "The Agent Development Kit" — ziet ze als <strong className={theme.text}>vijf complementaire lagen</strong>, elk met een eigen verantwoordelijkheid. Wie alle vijf op de juiste plek inzet, bouwt agents die schalen tot teamniveau zonder elke nieuwe ontwikkelaar opnieuw uit te leggen wat je conventies zijn.
+      </P>
+      <Pre theme={theme} label="agent-dev-kit/ — five layers, one stack">{`Layer 1 — CLAUDE.md           THE MEMORY LAYER
+   CLAUDE.md/                  Sets the rules
+   ├── architecture.rules      Naming, structure, repo expectations
+   ├── global.md               Lives at ~/.claude/ — every project
+   └── project.md              Lives at .claude/ — this repo only
+
+Layer 2 — Skills              THE KNOWLEDGE LAYER
+   skills/                     Provides expertise
+   ├── SKILL.md                Description-matched, auto-invoked
+   ├── scripts/                Reference scripts the skill calls
+   ├── templates/              Boilerplate the skill copies in
+   └── assets/                 Images, fonts, configs the skill ships
+
+Layer 3 — Hooks               THE GUARDRAIL LAYER
+   hooks/                      Enforces quality (deterministic, not AI)
+   ├── PreToolUse.sh           Inspect or block before any tool runs
+   ├── PostToolUse.sh          Lint, log, or notify after tool runs
+   ├── SessionStart.sh         Load context when a session begins
+   ├── Stop.sh                 Run when Claude finishes a turn
+   └── SubagentStop.sh         Run when a subagent returns
+
+Layer 4 — Subagents           THE DELEGATION LAYER
+   subagents/                  Delegates work without polluting context
+   ├── code-reviewer.md        Reviews diffs against repo conventions
+   ├── test-runner.md          Runs the suite and reports failures
+   ├── explorer.md             Maps the codebase, returns findings
+   └── feature-dev.md          Designs and implements end-to-end
+
+Layer 5 — Plugins             THE DISTRIBUTION LAYER
+   plugins/                    Ships the whole stack to your team
+   ├── manifest.json           Bundles skills + agents + hooks + cmds
+   ├── marketplace.url         Discoverable, one-click install per repo
+   └── team.install            One install — every teammate aligned
+
+Plus dwars hierop:
+   MCP Server                  Externe tools (GitHub, DB, APIs, custom)
+   Agent Teams                 Parallel execution, message passing,
+                               shared perms`}</Pre>
+
+      <H3>De rol van elke laag — in één zin</H3>
+      <div className="grid md:grid-cols-2 gap-3 my-4">
+        <Card theme={theme}>
+          <div className="font-semibold mb-1">CLAUDE.md — Memory Layer</div>
+          <p className={`text-sm ${theme.textMuted}`}>"Sets the rules." Architecturale conventies, naming, scripts, gotchas. Geladen bij elke sessie. Dit is het verschil tussen "Claude raadt jullie stijl" en "Claude weet jullie stijl".</p>
+        </Card>
+        <Card theme={theme}>
+          <div className="font-semibold mb-1">Skills — Knowledge Layer</div>
+          <p className={`text-sm ${theme.textMuted}`}>"Provides expertise." On-demand modulair. Description-matched, auto-invoked context — pas geladen wanneer relevant. <strong className={theme.text}>One skill. Wired forever. Future Claude knows.</strong></p>
+        </Card>
+        <Card theme={theme}>
+          <div className="font-semibold mb-1">Hooks — Guardrail Layer</div>
+          <p className={`text-sm ${theme.textMuted}`}>"Enforces quality." Deterministisch — geen AI. Plain shell-scripts die op events vuren. <strong className={theme.text}>Hooks turn vibes into rules. Git hooks, but for your agent.</strong></p>
+        </Card>
+        <Card theme={theme}>
+          <div className="font-semibold mb-1">Subagents — Delegation Layer</div>
+          <p className={`text-sm ${theme.textMuted}`}>"Delegates work." Eigen context window per subagent. Parent stuurt taak, krijgt één samengevatte response terug. <strong className={theme.text}>Delegate the noise. Keep the main thread clean.</strong></p>
+        </Card>
+        <Card theme={theme}>
+          <div className="font-semibold mb-1">Plugins — Distribution Layer</div>
+          <p className={`text-sm ${theme.textMuted}`}>"Distributes to team." Bundle skills + agents + hooks + commands in één installeerbare unit. <strong className={theme.text}>Build it once. Install it everywhere. The team levels up together.</strong></p>
+        </Card>
+        <Card theme={theme}>
+          <div className="font-semibold mb-1">MCP — kruisende laag</div>
+          <p className={`text-sm ${theme.textMuted}`}>Geeft toegang tot <em>externe</em> systemen (GitHub, DB, je eigen API). Niet één van de vijf hoofdlagen, maar wel de connector tussen je agent-stack en de echte wereld.</p>
+        </Card>
+      </div>
+
+      <H3>Hoe de lagen samenwerken</H3>
+      <Pre theme={theme}>{`CLAUDE.md     →   Skills      →   Hooks         →   Subagents    →   Plugins
+"sets rules"      "provides       "enforce          "delegate        "distribute
+                   expertise"      quality"          work"             to team"
+
+Elke nieuwe sessie:
+  1. CLAUDE.md geladen (architecturale conventies, scripts, gotchas)
+  2. Skills beschikbaar maar nog niet geladen — wachten op trigger
+  3. Hooks zitten klaar in hooks/, vuren bij PreToolUse / PostToolUse
+  4. Subagents staan in subagents/ — Claude roept ze aan als hij iets
+     wil delegeren met clean context
+  5. Plugins zorgen dat je hele team dezelfde 1-4 heeft, zonder
+     handmatige sync
+
+Bron: leadgenman op Instagram, "The Agent Development Kit"-serie.
+De originele 5-laags framing is van hem; de uitwerking hierboven
+volgt zijn structuur en is uitgebreid met details uit de officiële
+Claude Code docs.`}</Pre>
+
+      <H3>Praktische subagent-blueprints</H3>
+      <P theme={theme}>
+        De vier subagents uit het ADK-model dekken het meeste productie-werk. Per subagent een realistische blauwdruk:
+      </P>
+      <Pre theme={theme} label=".claude/agents/code-reviewer.md">{`---
+name: code-reviewer
+description: Reviews git diffs against repo conventions in CLAUDE.md.
+  Use after any non-trivial Edit or before a PR.
+tools: Read, Grep, Glob, Bash(git diff:*)
+model: sonnet
+---
+
+You are a strict code reviewer. Your job:
+1. Read CLAUDE.md to learn this repo's conventions.
+2. Run \`git diff main...HEAD\` and review only the changed lines.
+3. Flag: convention violations, missing tests, dead code,
+   unsafe SQL/regex, hardcoded secrets, broken imports.
+4. Output as: { severity: low|med|high|critical, file:line,
+   issue, suggested fix }.
+Don't propose alternative architectures — just review.`}</Pre>
+      <Pre theme={theme} label=".claude/agents/test-runner.md">{`---
+name: test-runner
+description: Runs the test suite and reports failures with context.
+  Use when you've made changes and want to verify before commit.
+tools: Bash(npm test:*), Bash(npm run:*), Read
+model: haiku
+---
+
+Run the project's test command (check package.json scripts).
+For each failure: extract the assertion, the file:line, and
+read 5 lines of source around it. Return ONE structured message:
+  - failures: count
+  - per failure: { test_name, file:line, expected, actual, suggested_fix }
+  - passed: count
+  - duration_ms: total
+Don't propose code changes — leave that to the parent.`}</Pre>
+      <Pre theme={theme} label=".claude/agents/explorer.md">{`---
+name: explorer
+description: Maps an unknown codebase or feature area in read-only mode.
+  Use when the user asks "where is X" or "how does Y work".
+tools: Read, Grep, Glob, Bash(rg:*), Bash(fd:*)
+model: haiku
+---
+
+You are a read-only exploration agent. Workflow:
+1. Start with package.json + README + CLAUDE.md to grasp the stack.
+2. Grep/glob for the feature or symbol the parent asked about.
+3. Build a mini map: entry points, key files, data flow, gotchas.
+4. Return ONE message with file paths + line numbers + 1-line per file.
+Never edit files. Never run anything destructive.`}</Pre>
+      <Pre theme={theme} label=".claude/agents/feature-dev.md">{`---
+name: feature-dev
+description: Designs and implements a small feature end-to-end.
+  Use when scope is clear and isolated (one ticket, one PR).
+tools: Read, Edit, Write, Bash(npm test:*), Bash(git:*), Glob, Grep
+model: sonnet
+effort: high
+---
+
+You are a feature developer. Workflow:
+1. Read the ticket / spec from the parent.
+2. Read CLAUDE.md + relevant source.
+3. Plan: file changes, tests, migration steps.
+4. Implement in small commits with descriptive messages.
+5. Run tests; iterate until green.
+6. Return summary: files changed, tests added, open questions.
+Stop and ask the parent before any: schema migration, dependency
+add, or destructive git operation.`}</Pre>
+
+      <Callout kind="success">
+        <p className={`text-sm ${theme.textMuted}`}>
+          <strong className={theme.text}>Praktische volgorde van inzetten:</strong> begin met laag 1 (CLAUDE.md via <InlineCode theme={theme}>/init</InlineCode>) en laag 3 (één PreToolUse-hook tegen <InlineCode theme={theme}>rm -rf</InlineCode>). Voeg laag 2 (Skills) toe zodra je merkt dat je dezelfde uitleg vaak herhaalt. Laag 4 (Subagents) als je sessies te vol raken. Laag 5 (Plugins) pas wanneer je team breder dan 2 personen wordt en je conventies wil delen. Wie alles tegelijk probeert, raakt verstrikt voor de eerste laag rendeert.
+        </p>
+      </Callout>
+
       <H2>Praktische workflows</H2>
       <H3>Daily flow</H3>
       <Pre theme={theme}>{`# Ochtend, nieuw project openen
