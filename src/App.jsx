@@ -742,31 +742,65 @@ Beter elke dag 30 min dan één weekend per maand 8u.`}</Pre>
       <P theme={theme}>
         De rol "prompt engineer" als zelfstandig vak is in 2026 vrijwel verdampt. Wat overblijft is prompting als deelvaardigheid binnen bredere rollen. De zes specialisaties waar wel actief op wordt gehired:
       </P>
-      <ol className={`space-y-2 ${theme.textMuted} text-sm list-none`}>
-        <li>1. <strong className={theme.text}>AI Product Engineer</strong> — dichtst bij full-stack. Bouwt user-facing features met LLM's. Veelgevraagd bij SaaS scale-ups.</li>
-        <li>2. <strong className={theme.text}>Agent Engineer</strong> — ontwerpt multi-step agents met tool-use, planning en error-recovery. Snelst groeiende sub-rol.</li>
-        <li>3. <strong className={theme.text}>RAG Engineer</strong> — gespecialiseerd in retrieval-architectuur, hybride search, chunking, re-ranking en evaluatie van retrieval-kwaliteit.</li>
-        <li>4. <strong className={theme.text}>LLMOps Engineer</strong> — niet model-weights versioneren maar prompts, evals en cost-tracking. Tools: Helicone, Langfuse, Braintrust, LangSmith.</li>
-        <li>5. <strong className={theme.text}>AI Infrastructure Engineer</strong> — bouwt het platform: model-serving, batching, GPU-scheduling, fallbacks tussen providers.</li>
-        <li>6. <strong className={theme.text}>AI Safety / Red-team Engineer</strong> — prompt-injection, jailbreak-detectie, output-filtering. Bij Anthropic en OpenAI structureel; bij Europese fintech en healthtech door EU AI Act steeds vaker een aparte rol.</li>
-      </ol>
-      <P theme={theme}>
-        Andrej Karpathy's "Software 3.0"-frame helpt om je positie te bepalen: software 1.0 schrijft expliciete code, software 2.0 traint neurale netwerken, software 3.0 <em>programmeert in natuurlijke taal</em> via LLMs. AI engineers leven primair in 3.0 met handvatten naar 1.0 (de glue-code) en 2.0 (fine-tuning waar nodig).
-      </P>
+      <div className="grid md:grid-cols-2 gap-3 my-5">
+        <Card theme={theme} label="Specialisatie 01">
+          <h4 className="font-semibold mb-1">AI Product Engineer</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Dichtst bij full-stack. Bouwt user-facing features met LLM's. Veelgevraagd bij SaaS scale-ups die hun product willen "AI-doordrenken" zonder een aparte AI-team-as-a-silo te bouwen.</p>
+        </Card>
+        <Card theme={theme} label="Specialisatie 02" highlighted>
+          <h4 className="font-semibold mb-1">Agent Engineer</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Ontwerpt multi-step agents met tool-use, planning en error-recovery. Snelst groeiende sub-rol — elke serieuze AI-startup zoekt er minstens één.</p>
+        </Card>
+        <Card theme={theme} label="Specialisatie 03">
+          <h4 className="font-semibold mb-1">RAG Engineer</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Retrieval-architectuur, hybride search (BM25 + dense), chunking-strategie, re-ranking, evaluatie van retrieval-kwaliteit. Vaak de bottleneck in enterprise-deals.</p>
+        </Card>
+        <Card theme={theme} label="Specialisatie 04">
+          <h4 className="font-semibold mb-1">LLMOps Engineer</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Niet model-weights versioneren maar <em>prompts</em>, evals en cost-tracking. Tools: Helicone, Langfuse, Braintrust, LangSmith. Onmisbaar zodra je productie hebt.</p>
+        </Card>
+        <Card theme={theme} label="Specialisatie 05">
+          <h4 className="font-semibold mb-1">AI Infrastructure Engineer</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Bouwt het platform: model-serving, batching, GPU-scheduling, fallbacks tussen providers. Voor scale-ups met eigen GPU-vloot of strikte data-residency.</p>
+        </Card>
+        <Card theme={theme} label="Specialisatie 06">
+          <h4 className="font-semibold mb-1">AI Safety / Red-team Engineer</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Prompt-injection, jailbreak-detectie, output-filtering. Bij Anthropic/OpenAI structureel; bij EU-fintech en healthtech door de AI Act steeds vaker een aparte rol.</p>
+        </Card>
+      </div>
+      <Callout kind="tip">
+        <p className="text-sm">
+          <strong>Andrej Karpathy's "Software 3.0"-frame</strong> helpt om je positie te bepalen: <strong>1.0</strong> schrijft expliciete code, <strong>2.0</strong> traint neurale netwerken, <strong>3.0</strong> <em>programmeert in natuurlijke taal</em> via LLMs. AI engineers leven primair in 3.0 met handvatten naar 1.0 (de glue-code) en 2.0 (fine-tuning waar nodig).
+        </p>
+      </Callout>
 
       <H2>Portfolio: wat indruk maakt en wat niet</H2>
       <P theme={theme}>
-        Een portfolio vol tutorial-clones is in 2026 erger dan geen portfolio — recruiters herkennen LangChain quickstarts uit de verte. Wat wel werkt:
+        Een portfolio vol tutorial-clones is in 2026 erger dan geen portfolio — recruiters herkennen LangChain quickstarts uit de verte. Vier projecten die wél indruk maken:
       </P>
-      <ul className={`space-y-2 ${theme.textMuted} text-sm list-none`}>
-        <li>• <strong className={theme.text}>Eén RAG-project met echte eval.</strong> Niet "ik bouwde een chatbot voor mijn PDF's", maar: documentcorpus, hybride retrieval (BM25 + dense), chunking-experimenten, een eval-set van 50+ vragen met ground-truth, recall@k en faithfulness-metrics. Documenteer waarom je voor <InlineCode theme={theme}>bge-large</InlineCode> koos en niet voor <InlineCode theme={theme}>text-embedding-3-large</InlineCode>.</li>
-        <li>• <strong className={theme.text}>Eén klein agent dat één probleem écht oplost.</strong> Hiring teams prefereren simpele agents boven multi-agent demos. Toon tool-selectie, error-handling en guardrails.</li>
-        <li>• <strong className={theme.text}>Een eval-pipeline als losstaand project.</strong> Rubrics, LLM-as-judge, regressietests over modelversies. Dit signaleert "production-ready" sterker dan welke demo dan ook.</li>
-        <li>• <strong className={theme.text}>Eén safety-georienteerd project.</strong> Prompt-injection-detector, content-filter, of een fallback-strategie. Steeds vaker een differentiator.</li>
-      </ul>
-      <P theme={theme}>
-        Wat niet werkt: notebook-only repos, "ik gebruikte LangChain om..." zonder eigen architectuurkeuzes, en demo's zonder README die het probleem en de limieten beschrijft. README's met latency-cijfers, kostenanalyse per request en gedocumenteerde failure-modes vallen op.
-      </P>
+      <div className="grid md:grid-cols-2 gap-3 my-5">
+        <Card theme={theme} label="Project A">
+          <h4 className="font-semibold mb-1">Eén RAG-project met echte eval</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Niet "ik bouwde een chatbot voor mijn PDF's", maar: documentcorpus, hybride retrieval (BM25 + dense), chunking-experimenten, eval-set van 50+ vragen met ground-truth, recall@k en faithfulness. Documenteer waarom je voor <InlineCode theme={theme}>bge-large</InlineCode> koos en niet voor <InlineCode theme={theme}>text-embedding-3-large</InlineCode>.</p>
+        </Card>
+        <Card theme={theme} label="Project B">
+          <h4 className="font-semibold mb-1">Eén klein agent dat één probleem oplost</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Hiring teams prefereren simpele agents boven multi-agent demos. Toon tool-selectie, error-handling en guardrails. "Eenvoudig en betrouwbaar" verslaat "complex en magisch".</p>
+        </Card>
+        <Card theme={theme} label="Project C" highlighted>
+          <h4 className="font-semibold mb-1">Eval-pipeline als losstaand project</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Rubrics, LLM-as-judge, regressietests over modelversies. Signaleert "production-ready" sterker dan welke demo dan ook — dit is wat de schaarse senior-AI-engineers van junior onderscheidt.</p>
+        </Card>
+        <Card theme={theme} label="Project D">
+          <h4 className="font-semibold mb-1">Eén safety-project</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Prompt-injection-detector, content-filter of fallback-strategie. Door EU AI Act steeds vaker een differentiator — vooral in fintech en healthtech.</p>
+        </Card>
+      </div>
+      <Callout kind="warn">
+        <p className="text-sm">
+          <strong>Wat juist NIET werkt:</strong> notebook-only repos, "ik gebruikte LangChain om..." zonder eigen architectuurkeuzes, demo's zonder README die het probleem en de limieten beschrijft. READMEs met latency-cijfers, kostenanalyse per request en gedocumenteerde failure-modes vallen op.
+        </p>
+      </Callout>
 
       <H2>Interview-voorbereiding: wat ze écht vragen</H2>
       <P theme={theme}>
@@ -1943,14 +1977,33 @@ print(result.input_tokens)  # exacte count incl. system optimizations`}</Pre>
 
       <H2>Token-fertility: waarom Nederlands ~1.5-2× duurder is</H2>
       <P theme={theme}>
-        "Fertility" is een term uit de NLP-onderzoekswereld voor het gemiddeld aantal tokens per woord. Een ideale tokenizer heeft fertility 1.0. Engels haalt op moderne tokenizers ruwweg 1.2-1.4. Nederlands zit hoger door samenstellingen ("arbeidsongeschiktheidsverzekering" wordt in 4-6 stukjes gehakt) en het feit dat training data sterk Engels-georiënteerd is.
+        "Fertility" is NLP-jargon voor het gemiddeld aantal tokens per woord. Een ideale tokenizer haalt 1.0; in de praktijk hangt het sterk van de taal af. De training data is overweldigend Engels — alle andere talen "betalen" voor die scheefheid. Concrete waarden:
       </P>
-      <P theme={theme}>
-        Praktische impact: hetzelfde document kost in het Nederlands grofweg 1.5-2× zoveel tokens als in het Engels. Voor talen met niet-Latijns schrift (Cyrillisch, Grieks, Hebreeuws) loopt dat op tot 3-6× — onderzoek wijst uit dat vanilla GPT-2 voor Oekraïens ruim 6 tokens per woord nodig heeft.
-      </P>
-      <P theme={theme}>
-        Wat dit betekent voor je API-rekening: als je een Engels system prompt vertaalt naar Nederlands, verdubbelt je input-cost. Overweeg om systeem-instructies bewust in het Engels te houden en alleen de output-formatinstructie in het Nederlands te zetten.
-      </P>
+      <div className="overflow-x-auto my-5">
+        <table className={`w-full text-sm border ${theme.border} rounded-xl overflow-hidden`}>
+          <thead className={theme.bgAlt}>
+            <tr>
+              <th className="text-left p-3 font-semibold">Taal</th>
+              <th className="text-left p-3 font-semibold">Tokens / woord</th>
+              <th className="text-left p-3 font-semibold">Cost-multiplier</th>
+              <th className="text-left p-3 font-semibold">Waarom</th>
+            </tr>
+          </thead>
+          <tbody className={theme.bgCard}>
+            <tr className={`border-t ${theme.border}`}><td className="p-3 font-mono">Engels</td><td className="p-3 font-mono">1.2 - 1.4</td><td className="p-3 font-mono">1.0× <span className={`text-[10px] ${theme.textSubtle}`}>(baseline)</span></td><td className={`p-3 ${theme.textMuted} text-[13px]`}>Tokenizer-vocab is geoptimaliseerd op Engelse training-data.</td></tr>
+            <tr className={`border-t ${theme.border} ${theme.bgSoft}`}><td className="p-3 font-mono font-semibold">Nederlands</td><td className="p-3 font-mono font-semibold">1.8 - 2.4</td><td className="p-3 font-mono font-semibold">~1.5 - 2.0×</td><td className={`p-3 ${theme.textMuted} text-[13px]`}>Samenstellingen worden gehakt: "arbeidsongeschiktheidsverzekering" → 4-6 tokens.</td></tr>
+            <tr className={`border-t ${theme.border}`}><td className="p-3 font-mono">Duits</td><td className="p-3 font-mono">2.0 - 2.6</td><td className="p-3 font-mono">~1.6 - 2.2×</td><td className={`p-3 ${theme.textMuted} text-[13px]`}>Zelfde compound-probleem als Nederlands, vaak nog erger.</td></tr>
+            <tr className={`border-t ${theme.border}`}><td className="p-3 font-mono">Frans</td><td className="p-3 font-mono">1.5 - 1.8</td><td className="p-3 font-mono">~1.2 - 1.5×</td><td className={`p-3 ${theme.textMuted} text-[13px]`}>Latijns schrift, geen extreme samenstellingen.</td></tr>
+            <tr className={`border-t ${theme.border}`}><td className="p-3 font-mono">Cyrillisch (RU/UA)</td><td className="p-3 font-mono">3 - 6</td><td className="p-3 font-mono">~2.5 - 5×</td><td className={`p-3 ${theme.textMuted} text-[13px]`}>Niet-Latijns schrift krijgt vaak één byte per token.</td></tr>
+            <tr className={`border-t ${theme.border}`}><td className="p-3 font-mono">Chinees / Japans</td><td className="p-3 font-mono">1 token / karakter</td><td className="p-3 font-mono">~3 - 4×</td><td className={`p-3 ${theme.textMuted} text-[13px]`}>Tekens dragen meer betekenis maar zijn duur per teken.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <Callout kind="tip">
+        <p className="text-sm">
+          <strong>Optimalisatie-trick:</strong> hou je <em>system prompt</em> in het Engels en zet alleen de <em>output-formatinstructie</em> ("Antwoord in het Nederlands") aan het eind. De grote tekstmassa (rol, context, voorbeelden) is dan goedkoper, terwijl de output nog in jouw taal komt. Bespaart al snel 30-40% op input-tokens bij Nederlandstalige producten.
+        </p>
+      </Callout>
 
       <H2>KV-cache: het mechanisme onder prompt caching</H2>
       <P theme={theme}>
@@ -8627,16 +8680,45 @@ function ClaudeDeep({ theme }) {
 |  Messages | Tools | Files | Batch | Embeddings(Voyage)        |
 +---------------------------------------------------------------+`}</Pre>
 
-      <H2>Claude.ai (claude.ai)</H2>
+      <H2>Claude.ai — zeven features die je vaak nog niet kent</H2>
       <P theme={theme}>
-        De web-app waarmee de meeste mensen Claude leren kennen. Onder de motorkap is het veel meer dan een chat. Een paar features die je vaak nog niet kent:
+        De web-app waarmee de meeste mensen Claude leren kennen, maar het is veel meer dan een chat. Zeven features met elk hun eigen scherpe use-case:
       </P>
-
-      <H3>Projects</H3>
-      <P theme={theme}>
-        Een Project is een container met eigen <strong className={theme.text}>system prompt</strong>, <strong className={theme.text}>uploaded files</strong> en <strong className={theme.text}>memory</strong>. Elke chat in dat project erft die context. Ideaal voor: een bedrijfsproject met vaste documenten, een privé-research-stroom, of een coding-project waarbij je code-files erbij hebt.
-      </P>
-      <Pre theme={theme}>{`Voorbeeld project: "Mijn handelsbot"
+      <div className="grid md:grid-cols-2 gap-3 my-5">
+        <Card theme={theme} label="Feature 01" highlighted>
+          <h4 className="font-semibold mb-1">Projects</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Container met eigen <strong className={theme.text}>system prompt</strong>, <strong className={theme.text}>uploaded files</strong> en <strong className={theme.text}>memory</strong>. Elke chat in het project erft die context. Ideaal voor bedrijfsdossiers, vaste research-stromen of coding-projecten.</p>
+        </Card>
+        <Card theme={theme} label="Feature 02" highlighted>
+          <h4 className="font-semibold mb-1">Artifacts</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Live previews binnen de chat. React/HTML/SVG-apps, dashboards, micro-tools, Mermaid-diagrammen — iteratief gebouwd, deelbaar via publieke link. "Maak hier een Artifact van" expliciet vragen.</p>
+        </Card>
+        <Card theme={theme} label="Feature 03">
+          <h4 className="font-semibold mb-1">Computer Use</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Claude beweegt muis, klikt, typt, maakt screenshots. Sandbox in Claude.ai, of via de API met je eigen Linux VM. Goed voor sheet-invul, form-submit en scraping van legacy-tools zonder API.</p>
+        </Card>
+        <Card theme={theme} label="Feature 04">
+          <h4 className="font-semibold mb-1">File uploads & Q&A</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Sleep PDF's, Word, Excel, PowerPoint, beelden, code, JSON erin. Native lezen — geen extractie nodig. Bij 50+ pagina's combinatie van direct lezen en in-document search.</p>
+        </Card>
+        <Card theme={theme} label="Feature 05">
+          <h4 className="font-semibold mb-1">Memory</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Cross-conversation feiten over jou en je werk. Anders dan Projects (per project) is dit <em>globaal</em> per account. Zichtbaar, bewerkbaar, uit te schakelen.</p>
+        </Card>
+        <Card theme={theme} label="Feature 06">
+          <h4 className="font-semibold mb-1">MCP Connectors</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Settings → Connectors: Slack, GitHub, Linear, Notion, Google Drive. Eenmaal verbonden kan elke chat die tools aanroepen — "stuur dit naar #dev" werkt zonder code.</p>
+        </Card>
+        <Card theme={theme} label="Feature 07">
+          <h4 className="font-semibold mb-1">Voice Mode (mobiel)</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Spreek tegen Claude, krijg gesproken antwoord. Onderweg-brainstormen, samenvattingen tijdens autorijden, idea-capture in de wandelgangen.</p>
+        </Card>
+        <Card theme={theme} label="Bonus">
+          <h4 className="font-semibold mb-1">Artifact-formaten</h4>
+          <p className={`text-sm ${theme.textMuted}`}>React + Tailwind + shadcn/ui · single-file HTML · SVG · Mermaid · Markdown · runnable Python/JS/Go in code-execution sandbox · multi-component Web Artifacts met routing en state.</p>
+        </Card>
+      </div>
+      <Pre theme={theme} label="Voorbeeld Project-setup">{`Project: "Mijn handelsbot"
   System prompt: "Je bent mijn quant-engineer. Antwoord direct,
                   in NL, met code als ik dat vraag."
   Files:         strategie.pdf, backtest_results.csv, README.md
@@ -8644,50 +8726,6 @@ function ClaudeDeep({ theme }) {
   Connectors:    GitHub MCP, Notion MCP
 
   Elke nieuwe chat in dit project = die context al geladen.`}</Pre>
-
-      <H3>Artifacts</H3>
-      <P theme={theme}>
-        Artifacts zijn live previews binnen Claude.ai. In plaats van code in een blok te genereren, draait Claude een complete React/HTML/SVG-app naast de chat. Werken doe je iteratief: vraag een tweak en het Artifact updatet.
-      </P>
-      <ul className={`space-y-2 ${theme.textMuted} text-sm list-none`}>
-        <li>• <strong className={theme.text}>React + Tailwind + shadcn/ui</strong> — complete UI's, dashboards, formulieren</li>
-        <li>• <strong className={theme.text}>Single-file HTML</strong> — landingspagina's, micro-tools</li>
-        <li>• <strong className={theme.text}>SVG diagrammen</strong> — schemas, flowcharts</li>
-        <li>• <strong className={theme.text}>Mermaid diagrammen</strong> — flowcharts, sequence-diagrammen, ERD's</li>
-        <li>• <strong className={theme.text}>Markdown documenten</strong> — handleidingen, rapporten</li>
-        <li>• <strong className={theme.text}>Code (Python, JS, Go, ...)</strong> — runnable in code execution sandbox</li>
-        <li>• <strong className={theme.text}>Web Artifacts (multi-component)</strong> — voor complexere apps met routing en state</li>
-      </ul>
-      <Callout kind="tip">
-        <p className={`text-sm ${theme.textMuted}`}>
-          <strong className={theme.text}>Praktische tip:</strong> als je een app wilt die echt werkt, vraag <em>"maak hier een Artifact van"</em> expliciet. Het Artifact wordt dan getest, gedraaid en gepublished. Je kunt het vervolgens delen via een publieke link.
-        </p>
-      </Callout>
-
-      <H3>Computer Use</H3>
-      <P theme={theme}>
-        Claude kan via een sandbox een muis bewegen, klikken, typen en screenshots maken. Vraag het een spreadsheet in te vullen, een formulier te submitten, een report te scrapen. Werkt vanuit Claude.ai (in een veilige VM) en via de API (jij moet zelf een Linux VM aanleveren).
-      </P>
-
-      <H3>File uploads & Document Q&A</H3>
-      <P theme={theme}>
-        Sleep PDF's, Word, Excel, PowerPoint, afbeeldingen, code, JSON in een chat. Claude leest ze native (geen extractie nodig). Voor zware documenten (50+ pagina's) gebruikt het een combinatie van direct lezen en search-binnen-document.
-      </P>
-
-      <H3>Memory</H3>
-      <P theme={theme}>
-        Claude.ai heeft "memory" als optionele feature: cross-conversation feiten over jou en je werk. Je kunt het zien, bewerken en uitschakelen. Anders dan Projects (die per project zijn) is dit globaal voor je account.
-      </P>
-
-      <H3>MCP Connectors</H3>
-      <P theme={theme}>
-        In Settings → Connectors kun je MCP-servers koppelen: Slack, GitHub, Linear, Notion, Google Drive, etc. Eenmaal verbonden kan elke chat die tools aanroepen. Bv. "stuur dit antwoord naar #dev als Slack-bericht" werkt zonder code.
-      </P>
-
-      <H3>Voice Mode</H3>
-      <P theme={theme}>
-        Op mobiel: spreek tegen Claude, krijg gesproken antwoord. Goed voor onderweg-brainstormen of samenvattingen vragen tijdens auto-rijden (handsfree, uiteraard).
-      </P>
 
       <H2>Claude Code (CLI)</H2>
       <P theme={theme}>
@@ -10637,10 +10675,46 @@ function CostOpt({ theme }) {
         Een AI-app die werkt is leuk; een AI-app die werkt én betaalbaar blijft is een product. Veel teams ontdekken pas in productie hoe snel tokens optellen — een populaire chat kan zo €5.000+/mo kosten zonder dat iemand het ziet aankomen. Goed nieuws: er zijn 7 grote knoppen waar je aan kunt draaien, elk met een typische besparing van 20-90%.
       </P>
 
-      <H2>Knop 1: Prompt caching (5-10x bij herhaald gebruik)</H2>
+      <H2>De zeven hefbomen — overzicht</H2>
       <P theme={theme}>
-        Als je een grote, statische context (system prompt, document, tool-definities) bij elke call meestuurt, betaal je elke keer voor die tokens. Met caching wordt die context ofwel gratis (binnen 5 min) of 10% van de prijs (binnen 1u). Voor agents en RAG: brutaal effectief.
+        Zeven knoppen, elk met een typische besparingsrange en een specifieke use-case. Begin met de eerste drie — die leveren bijna altijd het meeste op met de minste engineering-kost.
       </P>
+      <div className="grid md:grid-cols-2 gap-3 my-5">
+        <Card theme={theme} label="Hefboom 01 · 5-10×" highlighted>
+          <h4 className="font-semibold mb-1">Prompt caching</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Statische context (system prompt, docs, tool-defs) wordt na de eerste call gecached. Reads kosten 10% van normaal binnen 5 min, of 1 uur met de extended TTL. Brutaal effectief voor agents en RAG.</p>
+        </Card>
+        <Card theme={theme} label="Hefboom 02 · 3-10×" highlighted>
+          <h4 className="font-semibold mb-1">Model routing</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Lichtgewicht Haiku-router classificeert eerst de complexiteit. 70-90% van calls gaat naar Haiku, alleen complexe vragen naar Sonnet/Opus. Zonder kwaliteitsverlies.</p>
+        </Card>
+        <Card theme={theme} label="Hefboom 03 · 50%">
+          <h4 className="font-semibold mb-1">Batch API</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Non-realtime werk (overnight classify, embeddings, samenvattingen) krijgt 50% korting. Resultaten binnen 24u. Perfect voor data-pipelines en evals.</p>
+        </Card>
+        <Card theme={theme} label="Hefboom 04 · ~85% tool-tokens">
+          <h4 className="font-semibold mb-1">Tool search</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Agent met 30+ tools? Tool definitions worden lazy geladen — alleen wanneer Claude ze nodig heeft. Anthropic-feature, ingebouwd in meerdere SDKs.</p>
+        </Card>
+        <Card theme={theme} label="Hefboom 05 · variabel">
+          <h4 className="font-semibold mb-1">Output limits</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Output is altijd 5× duurder dan input. Zet <InlineCode theme={theme}>max_tokens</InlineCode> conservatief (niet de default 8192). Voor classificatie is 1 token genoeg.</p>
+        </Card>
+        <Card theme={theme} label="Hefboom 06 · 5-20%">
+          <h4 className="font-semibold mb-1">Streaming abort</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Klikt de gebruiker weg of sluit het tabblad? Cancel de stream. Anders blijft Claude doorgenereren — en doorrekenen — tot max_tokens.</p>
+        </Card>
+        <Card theme={theme} label="Hefboom 07 · ~100%">
+          <h4 className="font-semibold mb-1">Embedding caching</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Dezelfde tekst geeft dezelfde embedding. Cache op een hash van de input. Hetzelfde document opnieuw indexeren = 0 nieuwe API calls.</p>
+        </Card>
+        <Card theme={theme} label="Bonus · 60-80% op pre-fixed work">
+          <h4 className="font-semibold mb-1">Caching + batch stacken</h4>
+          <p className={`text-sm ${theme.textMuted}`}>De combo: prompt caching (90% korting op input) plus Batch API (50% extra korting). Op je system-prompt-tokens loop je dan tegen 95%+ totale besparing aan.</p>
+        </Card>
+      </div>
+
+      <H3>De code achter hefboom 01 en 02</H3>
       <Pre theme={theme} label="Cache control op herhalend deel">{`messages = [{
   "role": "user",
   "content": [
@@ -10653,12 +10727,7 @@ function CostOpt({ theme }) {
 # Eerste call:  cache write     (1.25x normale prijs)
 # Volgende:     cache read      (0.10x normale prijs)
 # Break-even:   na ~2 calls`}</Pre>
-
-      <H2>Knop 2: Model routing (3-10x)</H2>
-      <P theme={theme}>
-        Niet elke vraag verdient Opus. Een lichtgewicht "router" model (Haiku) classificeert eerst de complexiteit. Alleen complexe vragen gaan naar Sonnet of Opus. In de praktijk gaat 70-90% van de calls naar Haiku zonder kwaliteitsverlies.
-      </P>
-      <Pre theme={theme}>{`def smart_route(query):
+      <Pre theme={theme} label="Smart routing pattern">{`def smart_route(query):
     classification = haiku.classify(
         query,
         labels=["trivia", "code-simple", "code-complex", "reasoning"]
@@ -10668,34 +10737,9 @@ function CostOpt({ theme }) {
     elif classification == "code-complex":
         return sonnet.answer(query)       # $3/$15 per M
     else:
-        return opus.answer(query)         # $5/$25 per M
+        return opus.answer(query)         # $15/$75 per M
 
 # Resultaat: gemiddelde kosten gedeeld door 3-10.`}</Pre>
-
-      <H2>Knop 3: Batch API (50%)</H2>
-      <P theme={theme}>
-        Voor non-realtime werk (overnight classify, embedding-generatie, periodieke samenvattingen): de Batch API geeft 50% korting. Resultaten binnen 24 uur. Perfect voor data-pipelines.
-      </P>
-
-      <H2>Knop 4: Tool search (~85% tool-tokens)</H2>
-      <P theme={theme}>
-        Een agent met 50 tools verbruikt fors aan tool-definities in de context. <em>Tool search</em> laadt definities pas wanneer Claude ze nodig heeft. Anthropic-feature, in een aantal SDKs ingebouwd.
-      </P>
-
-      <H2>Knop 5: Output limits (variabel)</H2>
-      <P theme={theme}>
-        Output is altijd 5x duurder dan input. Zet <InlineCode theme={theme}>max_tokens</InlineCode> conservatief in (niet de default van 8192). Vraag expliciet om beknoptheid. Voor classificatie hoef je geen 1000 tokens uitleg te genereren — een label van 1 token is genoeg.
-      </P>
-
-      <H2>Knop 6: Streaming abort (5-20%)</H2>
-      <P theme={theme}>
-        Als de gebruiker wegklikt of de pagina sluit terwijl Claude antwoordt, kun je de stream cancellen. Anders genereert het door (en betaal je) tot max_tokens.
-      </P>
-
-      <H2>Knop 7: Embedding caching (~100%)</H2>
-      <P theme={theme}>
-        Embeddings van dezelfde tekst zijn altijd gelijk. Cache embeddings op een hash van de input. Zelfde document indexeren = 0 nieuwe API calls.
-      </P>
 
       <H2>Tactiek: meet eerst, optimaliseer dan</H2>
       <Pre theme={theme}>{`Stap 1: log per call
@@ -10732,24 +10776,44 @@ Na:
 
 Winst: 83% bij gelijke kwaliteit.`}</Pre>
 
-      <H2>Hidden costs</H2>
-      <ul className={`space-y-2 ${theme.textMuted} text-sm list-none`}>
-        <li>• <strong className={theme.text}>Lange context bij elke call</strong> — ongewild bv. een 50KB markdown-file als system prompt: 12k tokens × elke call</li>
-        <li>• <strong className={theme.text}>Tool-error retries</strong> — als tool faalt, agent probeert opnieuw, soms 5x</li>
-        <li>• <strong className={theme.text}>Agent oneindige loops</strong> — geen max-iterations? agent kan duizenden tool-calls doen</li>
-        <li>• <strong className={theme.text}>Emojies in system prompts</strong> — geen joke: emoji's zijn meerdere tokens</li>
-        <li>• <strong className={theme.text}>Streaming naar disconnected client</strong> — kosten lopen door</li>
-      </ul>
+      <H2>Hidden costs — vijf stille killers</H2>
+      <P theme={theme}>
+        Vijf patronen die op je rekening verschijnen voordat je überhaupt door hebt dat ze er zijn:
+      </P>
+      <div className="grid md:grid-cols-2 gap-3 my-5">
+        <Card theme={theme} label="Killer 01">
+          <h4 className="font-semibold mb-1">Lange context bij elke call</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Ongewild een 50 KB markdown-file als system prompt: 12k tokens × elke call. Kijk je context-grootte na elke deploy.</p>
+        </Card>
+        <Card theme={theme} label="Killer 02">
+          <h4 className="font-semibold mb-1">Tool-error retries</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Als een tool faalt, probeert de agent het opnieuw — soms 5×. Eén foute MCP-server-config en je verbruikt 5× zoveel tokens dan verwacht.</p>
+        </Card>
+        <Card theme={theme} label="Killer 03">
+          <h4 className="font-semibold mb-1">Agent oneindige loops</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Geen <InlineCode theme={theme}>max_iterations</InlineCode>? De agent kan duizenden tool-calls doen voor één vraag. Altijd een hard cap.</p>
+        </Card>
+        <Card theme={theme} label="Killer 04">
+          <h4 className="font-semibold mb-1">Emoji's in system prompts</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Geen grap: één emoji is vaak 3-5 tokens. Voor een prompt die elke call gemoetuurd wordt: meetbaar verschil.</p>
+        </Card>
+        <Card theme={theme} label="Killer 05">
+          <h4 className="font-semibold mb-1">Streaming naar disconnected client</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Browser sluit, mobile-app crasht, netwerk valt weg — Claude blijft genereren. Kosten lopen door tot <InlineCode theme={theme}>max_tokens</InlineCode>.</p>
+        </Card>
+      </div>
 
       <H2>Wanneer NIET optimaliseren</H2>
-      <P theme={theme}>
-        Premature optimization is real. Optimaliseer pas als:
-      </P>
-      <ul className={`space-y-2 ${theme.textMuted} text-sm list-none`}>
-        <li>• Je kosten zien hebt en weet welke endpoint duur is</li>
-        <li>• Je een eval-set hebt om te checken dat optimalisatie geen kwaliteit kost</li>
-        <li>• Je een MVP hebt — eerst werkend, dan zuinig</li>
-      </ul>
+      <Callout kind="warn">
+        <p className={`text-sm mb-2`}>
+          Premature optimization is reëel. Optimaliseer pas als je drie dingen hebt:
+        </p>
+        <ol className={`space-y-1.5 text-sm list-none`}>
+          <li>1. <strong>Cost-attribution</strong> — je weet per endpoint wat het kost. Zonder meten geen optimaliseren.</li>
+          <li>2. <strong>Een eval-set</strong> — om te checken dat de optimalisatie geen kwaliteit kost.</li>
+          <li>3. <strong>Een werkend product</strong> — eerst MVP, dan zuinig. Andere volgorde = wasted engineering.</li>
+        </ol>
+      </Callout>
 
       <Callout kind="success">
         <p className={`text-sm ${theme.textMuted}`}>
@@ -10971,19 +11035,31 @@ virtual_keys:
 
       <H2>De hiërarchie van besparingen</H2>
       <P theme={theme}>
-        Volgorde waarin je optimalisaties moet aanpakken (ROI-gewogen):
+        ROI-gewogen volgorde — niet vanuit interesse, vanuit effort/return. De eerste vier kosten dagen en leveren 60-80% besparing. De zesde laag kost maanden engineering en geeft de laatste 20% — alleen rendabel boven serieuze schaal.
       </P>
-      <ol className={`space-y-2 ${theme.textMuted} text-sm list-none`}>
-        <li>1. Cost attribution opzetten (Langfuse/Helicone) — zonder meten geen optimaliseren</li>
-        <li>2. Prompt caching met juiste TTL-tier en breakpoint-stapeling</li>
-        <li>3. Model routing: Haiku waar mogelijk, Sonnet waar nodig, Opus alleen waar onmisbaar</li>
-        <li>4. Tool/response shaping en context compaction (de stille killers)</li>
-        <li>5. Batch API voor alles wat niet user-facing is</li>
-        <li>6. Pas dán: distillation, self-hosting, reserved capacity</li>
-      </ol>
-      <P theme={theme}>
-        De eerste vier kosten dagen, geven 60-80% besparing. Het zesde niveau kost maanden engineering en geeft de laatste 20% — alleen rendabel boven serieuze schaal.
-      </P>
+      <div className="space-y-3 my-5">
+        {[
+          { n: "01", title: "Cost attribution opzetten", note: "Langfuse / Helicone — zonder meten geen optimaliseren", phase: "Dag 1-2" },
+          { n: "02", title: "Prompt caching met juiste TTL-tier", note: "Stapel breakpoints: stabiel deel op 1u, sessie-deel op 5m", phase: "Dag 3-5" },
+          { n: "03", title: "Model routing", note: "Haiku waar mogelijk, Sonnet waar nodig, Opus alleen waar onmisbaar", phase: "Week 1-2" },
+          { n: "04", title: "Tool/response shaping + context compaction", note: "De stille killers — vaak 20%+ structurele waste in agent-trajectories", phase: "Week 2-3" },
+          { n: "05", title: "Batch API voor alles wat niet user-facing is", note: "50% korting bovenop alles erboven — stacking met caching loopt naar 95%+", phase: "Week 3-4" },
+          { n: "06", title: "Distillation, self-hosting, reserved capacity", note: "Pas hier — alleen rendabel boven serieuze schaal en stabiele requirements", phase: "Maand 2+" },
+        ].map((step) => (
+          <div key={step.n} className={`flex items-start gap-4 p-4 rounded-xl border ${theme.border} ${theme.bgCard}`}>
+            <div className={`flex-shrink-0 w-12 h-12 rounded-lg ${theme.bgSoft} flex items-center justify-center`}>
+              <span className={`font-mono text-base font-semibold ${theme.accentText}`}>{step.n}</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-baseline justify-between gap-3 flex-wrap">
+                <h4 className="font-semibold">{step.title}</h4>
+                <span className={`text-[10px] font-mono uppercase tracking-wider ${theme.textSubtle}`}>{step.phase}</span>
+              </div>
+              <p className={`text-sm ${theme.textMuted} mt-1`}>{step.note}</p>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -11213,16 +11289,28 @@ Resultaten:
         Theorie wordt pas concreet als je hem in context ziet. Hieronder per industrie de typische use cases, bewezen stacks, en een gedetailleerd voorbeeld dat je als blueprint kunt gebruiken. Alles staat in 2026-realiteit met echte resultaten en stacks die nu deployable zijn.
       </P>
 
-      <div className="space-y-6 my-6">
-        {industries.map(ind => (
-          <div key={ind.name} className={`p-5 rounded-xl border ${theme.border} ${theme.bgAlt}`}>
-            <h3 className={`font-bold text-xl mb-2 ${theme.accentText}`}>{ind.name}</h3>
-            <P theme={theme}><strong className={theme.text}>Typische problemen:</strong></P>
-            <ul className={`space-y-1 ${theme.textMuted} text-sm list-none mb-3`}>
-              {ind.problems.map((p, i) => <li key={i}>• {p}</li>)}
-            </ul>
-            <P theme={theme}><strong className={theme.text}>Stack:</strong> <span className={theme.textMuted}>{ind.stack}</span></P>
-            <Pre theme={theme} label="Concrete blueprint">{ind.example}</Pre>
+      <div className="space-y-8 my-6">
+        {industries.map((ind, idx) => (
+          <div key={ind.name} className={`rounded-2xl border ${theme.border} overflow-hidden`}>
+            <div className={`px-6 py-4 ${theme.bgSoft} border-b ${theme.border} flex items-baseline gap-3 flex-wrap`}>
+              <span className={`text-[10px] font-mono tracking-[0.2em] uppercase ${theme.accentText} font-semibold`}>Case {String(idx + 1).padStart(2, "0")}</span>
+              <h3 className="font-display text-2xl font-semibold">{ind.name}</h3>
+            </div>
+            <div className="p-6">
+              <div className="grid md:grid-cols-2 gap-3 mb-4">
+                {ind.problems.map((p, i) => (
+                  <div key={i} className={`flex items-start gap-2.5 p-3 rounded-lg border ${theme.borderSoft} ${theme.bgCard}`}>
+                    <span className={`mt-0.5 text-[10px] font-mono font-semibold ${theme.accentText} shrink-0`}>P{i + 1}</span>
+                    <span className={`text-sm ${theme.textMuted}`}>{p}</span>
+                  </div>
+                ))}
+              </div>
+              <div className={`mb-4 p-3 rounded-lg ${theme.bgSoft} border ${theme.borderSoft}`}>
+                <div className={`text-[10px] font-mono uppercase tracking-wider ${theme.textSubtle} mb-1`}>Stack</div>
+                <div className={`text-sm ${theme.text}`}>{ind.stack}</div>
+              </div>
+              <Pre theme={theme} label="Concrete blueprint">{ind.example}</Pre>
+            </div>
           </div>
         ))}
       </div>
