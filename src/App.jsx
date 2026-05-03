@@ -90,62 +90,68 @@ export default function ClaudeHandbook() {
   const progress = Math.round((completedCount / modules.length) * 100);
 
   const theme = darkMode ? {
-    bg: "bg-slate-950",
-    bgAlt: "bg-slate-900",
-    bgCard: "bg-slate-900",
-    bgHover: "hover:bg-slate-800",
-    border: "border-slate-800",
-    text: "text-slate-100",
-    textMuted: "text-slate-400",
-    textSubtle: "text-slate-500",
+    bg: "bg-stone-950",
+    bgAlt: "bg-stone-900",
+    bgCard: "bg-stone-900/60",
+    bgHover: "hover:bg-stone-800/80",
+    bgSoft: "bg-orange-500/5",
+    border: "border-stone-800",
+    borderSoft: "border-stone-800/60",
+    text: "text-stone-100",
+    textMuted: "text-stone-400",
+    textSubtle: "text-stone-500",
     accent: "bg-orange-500",
     accentText: "text-orange-400",
-    accentBorder: "border-orange-500",
-    input: "bg-slate-800 border-slate-700 text-slate-100",
-    code: "bg-slate-800 text-orange-300",
-    codeBlock: "bg-slate-950 border-slate-800",
+    accentBorder: "border-orange-500/60",
+    accentSoft: "bg-orange-500/10",
+    input: "bg-stone-900 border-stone-800 text-stone-100",
+    code: "bg-stone-800 text-orange-300",
+    codeBlock: "bg-stone-900/80 border-stone-800",
   } : {
-    bg: "bg-stone-50",
+    bg: "bg-[#FAF6F0]",
     bgAlt: "bg-white",
     bgCard: "bg-white",
-    bgHover: "hover:bg-stone-100",
+    bgHover: "hover:bg-stone-50",
+    bgSoft: "bg-[#F5EFE5]",
     border: "border-stone-200",
+    borderSoft: "border-stone-200/70",
     text: "text-stone-900",
     textMuted: "text-stone-600",
     textSubtle: "text-stone-500",
     accent: "bg-orange-600",
     accentText: "text-orange-700",
-    accentBorder: "border-orange-600",
+    accentBorder: "border-orange-500/70",
+    accentSoft: "bg-orange-100/60",
     input: "bg-white border-stone-300 text-stone-900",
-    code: "bg-stone-100 text-orange-700",
-    codeBlock: "bg-stone-100 border-stone-200",
+    code: "bg-orange-50 text-orange-800 border border-orange-100",
+    codeBlock: "bg-[#F5EFE5] border-stone-200",
   };
 
   return (
-    <div className={`min-h-screen ${theme.bg} ${theme.text} font-sans`}>
-      <header className={`sticky top-0 z-40 ${theme.bgAlt} border-b ${theme.border} backdrop-blur`}>
-        <div className="flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">
+    <div className={`min-h-screen ${theme.bg} ${theme.text}`}>
+      <header className={`sticky top-0 z-40 ${theme.bgAlt} border-b ${theme.borderSoft} backdrop-blur-xl`}>
+        <div className="flex items-center justify-between px-4 md:px-6 py-3.5 max-w-7xl mx-auto">
           <div className="flex items-center gap-3">
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden p-1.5 rounded hover:bg-slate-800">
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className={`lg:hidden p-1.5 rounded ${theme.bgHover}`}>
               <Menu className="w-5 h-5" />
             </button>
-            <div className={`w-9 h-9 rounded-lg ${theme.accent} flex items-center justify-center`}>
+            <div className={`w-9 h-9 rounded-lg ${theme.accent} flex items-center justify-center shadow-sm`}>
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-base font-bold leading-tight">Claude Engineering Handboek</h1>
-              <p className={`text-xs ${theme.textSubtle}`}>Jouw studieboek om AI engineer te worden</p>
+              <h1 className="font-display text-base font-semibold leading-tight tracking-tight">Claude Engineering <span className="italic-display text-orange-500">Handboek</span></h1>
+              <p className={`text-[11px] font-mono tracking-wider uppercase ${theme.textSubtle}`}>Jouw studieboek · AI engineer</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="hidden md:flex items-center gap-2">
-              <div className={`text-xs ${theme.textMuted}`}>Voortgang</div>
-              <div className="w-32 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <div className="hidden md:flex items-center gap-2.5">
+              <div className={`text-[10px] font-mono uppercase tracking-wider ${theme.textMuted}`}>Voortgang</div>
+              <div className={`w-32 h-1 ${theme.bgSoft} rounded-full overflow-hidden`}>
                 <div className={`h-full ${theme.accent} transition-all`} style={{ width: `${progress}%` }} />
               </div>
-              <div className="text-xs font-mono">{progress}%</div>
+              <div className="text-[11px] font-mono font-semibold tabular-nums">{progress}%</div>
             </div>
-            <button onClick={toggleDark} className={`p-2 rounded-lg ${theme.bgHover}`}>
+            <button onClick={toggleDark} className={`p-2 rounded-lg ${theme.bgHover} transition-colors`}>
               {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
           </div>
@@ -153,14 +159,14 @@ export default function ClaudeHandbook() {
       </header>
 
       <div className="flex max-w-7xl mx-auto">
-        <aside className={`${sidebarOpen ? "fixed inset-0 z-50 w-72" : "hidden"} lg:block lg:relative lg:w-72 lg:flex-shrink-0 ${theme.bgAlt} border-r ${theme.border} h-[calc(100vh-65px)] overflow-y-auto`}>
+        <aside className={`${sidebarOpen ? "fixed inset-0 z-50 w-80" : "hidden"} lg:block lg:relative lg:w-72 lg:flex-shrink-0 ${theme.bgAlt} border-r ${theme.borderSoft} h-[calc(100vh-65px)] overflow-y-auto`}>
           {sidebarOpen && (
             <div className="lg:hidden flex justify-end p-3">
               <button onClick={() => setSidebarOpen(false)}><X className="w-5 h-5" /></button>
             </div>
           )}
-          <div className="p-4">
-            <div className="relative mb-4">
+          <div className="p-5">
+            <div className="relative mb-5">
               <Search className={`absolute left-3 top-2.5 w-4 h-4 ${theme.textSubtle}`} />
               <input
                 type="text"
@@ -171,14 +177,18 @@ export default function ClaudeHandbook() {
               />
             </div>
 
-            {categories.map(cat => {
+            {categories.map((cat, catIdx) => {
               const catModules = filteredModules.filter(m => m.category === cat);
               if (catModules.length === 0) return null;
               return (
-                <div key={cat} className="mb-5">
-                  <h3 className={`text-xs font-semibold uppercase tracking-wider ${theme.textSubtle} mb-2 px-2`}>{cat}</h3>
+                <div key={cat} className="mb-6">
+                  <div className="flex items-baseline gap-2 mb-2.5 px-2">
+                    <span className={`text-[10px] font-mono ${theme.accentText} font-semibold`}>{String(catIdx + 1).padStart(2, "0")}</span>
+                    <h3 className={`text-[10px] font-semibold uppercase tracking-[0.18em] ${theme.textSubtle}`}>{cat}</h3>
+                  </div>
                   <ul className="space-y-0.5">
                     {catModules.map(m => {
+                      const moduleNum = modules.findIndex(mod => mod.id === m.id) + 1;
                       const Icon = m.icon;
                       const isActive = activeModule === m.id;
                       const isDone = completed[m.id];
@@ -186,13 +196,14 @@ export default function ClaudeHandbook() {
                         <li key={m.id}>
                           <button
                             onClick={() => { setActiveModule(m.id); setSidebarOpen(false); }}
-                            className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-left transition ${
-                              isActive ? `${theme.accent} text-white` : `${theme.bgHover} ${theme.textMuted}`
+                            className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-left transition group ${
+                              isActive ? `${theme.accent} text-white shadow-sm` : `${theme.bgHover} ${theme.textMuted}`
                             }`}
                           >
-                            <Icon className="w-4 h-4 flex-shrink-0" />
+                            <span className={`text-[10px] font-mono tabular-nums shrink-0 ${isActive ? "text-white/70" : theme.textSubtle}`}>{String(moduleNum).padStart(2, "0")}</span>
+                            <Icon className="w-4 h-4 flex-shrink-0 opacity-80" />
                             <span className="flex-1 truncate">{m.title}</span>
-                            {isDone && <CheckCircle2 className={`w-4 h-4 ${isActive ? "text-white" : "text-emerald-500"}`} />}
+                            {isDone && <CheckCircle2 className={`w-3.5 h-3.5 ${isActive ? "text-white" : "text-emerald-500"}`} />}
                           </button>
                         </li>
                       );
@@ -215,6 +226,9 @@ export default function ClaudeHandbook() {
             glossarySearch={glossarySearch}
             setGlossarySearch={setGlossarySearch}
             setActiveModule={setActiveModule}
+            moduleNumber={modules.findIndex(m => m.id === activeModule) + 1}
+            moduleCategory={modules.find(m => m.id === activeModule)?.category}
+            totalModules={modules.length}
           />
         </main>
       </div>
@@ -222,11 +236,15 @@ export default function ClaudeHandbook() {
   );
 }
 
-function ModuleContent({ id, theme, completed, onToggleComplete, note, onUpdateNote, glossarySearch, setGlossarySearch, setActiveModule }) {
+function ModuleContent({ id, theme, completed, onToggleComplete, note, onUpdateNote, glossarySearch, setGlossarySearch, setActiveModule, moduleNumber, moduleCategory, totalModules }) {
+  resetCounters();
   const content = getModuleContent(id, theme, glossarySearch, setGlossarySearch, setActiveModule);
 
   return (
     <div>
+      {id !== "welcome" && (
+        <ChapterHeader number={moduleNumber} total={totalModules} category={moduleCategory} theme={theme} />
+      )}
       {content}
 
       {id !== "welcome" && id !== "glossary" && (
@@ -254,29 +272,103 @@ function ModuleContent({ id, theme, completed, onToggleComplete, note, onUpdateN
   );
 }
 
-const H1 = ({ children }) => <h1 className="text-3xl md:text-4xl font-bold mb-3 tracking-tight">{children}</h1>;
-const H2 = ({ children }) => <h2 className="text-xl md:text-2xl font-bold mt-8 mb-3 tracking-tight">{children}</h2>;
-const H3 = ({ children }) => <h3 className="text-lg font-semibold mt-6 mb-2">{children}</h3>;
-const P = ({ children, theme }) => <p className={`${theme.textMuted} leading-relaxed mb-4`}>{children}</p>;
-const InlineCode = ({ children, theme }) => <code className={`px-1.5 py-0.5 rounded text-sm font-mono ${theme.code}`}>{children}</code>;
+// Section counter — resets per chapter via key
+let __sectionCounters = { h2: 0, h3: 0 };
+const resetCounters = () => { __sectionCounters = { h2: 0, h3: 0 }; };
+
+const ChapterHeader = ({ number, total, category, theme }) => (
+  <div className="mb-6 flex items-baseline gap-3 flex-wrap">
+    <span className={`text-xs font-mono tracking-[0.2em] uppercase ${theme.accentText} font-semibold`}>
+      Hoofdstuk {String(number).padStart(2, "0")}
+    </span>
+    {category && (
+      <>
+        <span className={`text-xs ${theme.textSubtle}`}>·</span>
+        <span className={`text-xs font-mono tracking-widest uppercase ${theme.textSubtle}`}>{category}</span>
+      </>
+    )}
+    {total && (
+      <span className={`ml-auto text-xs font-mono ${theme.textSubtle}`}>{number} / {total}</span>
+    )}
+  </div>
+);
+
+const H1 = ({ children }) => (
+  <div className="mb-8">
+    <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold leading-[1.05] text-balance">
+      {children}
+    </h1>
+    <div className="mt-5 h-[3px] w-16 rounded-full bg-orange-500"></div>
+  </div>
+);
+
+const H2 = ({ children }) => {
+  __sectionCounters.h2 += 1;
+  __sectionCounters.h3 = 0;
+  const num = __sectionCounters.h2;
+  return (
+    <h2 className="font-display text-2xl md:text-3xl font-semibold mt-14 mb-4 leading-tight text-balance flex items-baseline gap-3">
+      <span className="font-mono text-sm text-orange-500 font-semibold tracking-wider shrink-0">
+        {String(num).padStart(2, "0")}
+      </span>
+      <span>{children}</span>
+    </h2>
+  );
+};
+
+const H3 = ({ children }) => {
+  __sectionCounters.h3 += 1;
+  const num = `${__sectionCounters.h2}.${__sectionCounters.h3}`;
+  return (
+    <h3 className="text-lg md:text-xl font-semibold mt-8 mb-3 flex items-baseline gap-2.5">
+      <span className="font-mono text-xs opacity-50 shrink-0">{num}</span>
+      <span>{children}</span>
+    </h3>
+  );
+};
+
+const P = ({ children, theme }) => (
+  <p className={`${theme.textMuted} leading-[1.75] mb-5 text-[15px] md:text-base text-pretty`}>{children}</p>
+);
+
+const InlineCode = ({ children, theme }) => (
+  <code className={`px-1.5 py-0.5 rounded text-[0.85em] font-mono ${theme.code}`}>{children}</code>
+);
+
 const Pre = ({ children, theme, label }) => (
-  <div className="my-4">
-    {label && <div className={`text-xs ${theme.textSubtle} mb-1 font-mono`}>{label}</div>}
-    <pre className={`p-4 rounded-lg overflow-x-auto text-xs md:text-sm font-mono border ${theme.codeBlock} ${theme.text}`}>
+  <div className="my-6">
+    {label && (
+      <div className={`text-[10px] ${theme.textSubtle} mb-2 font-mono tracking-[0.15em] uppercase`}>{label}</div>
+    )}
+    <pre className={`p-5 rounded-xl overflow-x-auto text-xs md:text-[13px] leading-relaxed font-mono border ${theme.codeBlock} ${theme.text}`}>
       <code>{children}</code>
     </pre>
   </div>
 );
+
 const Callout = ({ children, kind = "tip" }) => {
-  const colors = {
-    tip: "border-blue-500/40 bg-blue-500/10",
-    warn: "border-amber-500/40 bg-amber-500/10",
-    success: "border-emerald-500/40 bg-emerald-500/10",
+  const labelMap = { tip: "Tip", warn: "Let op", success: "Onthoud" };
+  const styles = {
+    tip: { border: "border-l-sky-500", text: "text-sky-600", bg: "bg-sky-500/[0.06]" },
+    warn: { border: "border-l-amber-500", text: "text-amber-600", bg: "bg-amber-500/[0.06]" },
+    success: { border: "border-l-orange-500", text: "text-orange-600", bg: "bg-orange-500/[0.06]" },
   };
-  return <div className={`my-4 p-4 rounded-lg border ${colors[kind]}`}>{children}</div>;
+  const s = styles[kind];
+  return (
+    <div className={`my-6 p-5 rounded-r-xl border-l-[3px] ${s.border} ${s.bg}`}>
+      <div className={`text-[10px] font-mono tracking-[0.2em] uppercase mb-2 ${s.text} font-semibold`}>{labelMap[kind]}</div>
+      {children}
+    </div>
+  );
 };
-const Card = ({ children, theme }) => (
-  <div className={`p-4 rounded-xl border ${theme.border} ${theme.bgAlt}`}>{children}</div>
+
+const Card = ({ children, theme, label, highlighted = false }) => (
+  <div className={`p-5 rounded-2xl border transition-all ${highlighted ? `${theme.accentBorder} border-2 ${theme.accentSoft}` : `${theme.border} ${theme.bgCard}`}`}>
+    {label && (
+      <div className={`text-[10px] font-mono tracking-[0.2em] uppercase mb-2 ${highlighted ? theme.accentText : theme.textSubtle} font-semibold`}>{label}</div>
+    )}
+    {children}
+  </div>
 );
 
 function getModuleContent(id, theme, glossarySearch, setGlossarySearch, setActiveModule) {
