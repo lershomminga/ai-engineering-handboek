@@ -11704,6 +11704,115 @@ fast-paced world  (skip — cliché)`}</Pre>
         </p>
       </Callout>
 
+      <H2>6. Schaal — van solo naar team</H2>
+      <P theme={theme}>
+        Als je systeem voor jezelf werkt, ontstaat de volgende vraag: hoe deel je dit met een VA, een collega, of meerdere klanten? Hier zit de echte hefboom — niet "Claude die jou helpt" maar "iedereen om je heen werkt met dezelfde Claude-brain die jij hebt opgebouwd". Drie patronen, oplopend in schaal.
+      </P>
+
+      <H3>Stap 9 — Het client-folder pattern</H3>
+      <P theme={theme}>
+        Bouw je voor meerdere klanten of projecten? Geef elke klant een eigen Claude Code-folder met drie dingen: een <strong className={theme.text}>brief</strong> (wie, wat, doelstellingen), een <strong className={theme.text}>voice-bestand</strong> (toon, banned words, voorbeelden van eigen werk) en <strong className={theme.text}>past content</strong> (5-10 stukken die "goed" representeren). Plus één <InlineCode theme={theme}>CLAUDE.md</InlineCode> die als index fungeert.
+      </P>
+      <Pre theme={theme}>{`~/clients/
+├── hattie/
+│   ├── CLAUDE.md            # "Lees brief.md voor je begint"
+│   ├── brief.md             # wie is Hattie, wat doen we voor haar
+│   ├── voice.md             # toon, banned words, doelgroep
+│   └── past-content/        # 5-10 voorbeelden van haar werk
+├── acme-corp/
+│   ├── CLAUDE.md
+│   ├── brief.md
+│   ├── voice.md
+│   └── past-content/
+└── _shared/
+    ├── workflow.md          # standaard project-flow
+    └── templates/           # boilerplate per output-type`}</Pre>
+      <P theme={theme}>
+        Het magische: jouw VA opent de "Hattie"-folder en heeft <em>dezelfde brain</em> die jij hebt — zelfde context, zelfde voice, zelfde uitkomsten. Geen re-training, geen "doe het zoals ik" gesprek. De CLAUDE.md is het complete handboek voor die ene klant. Zwakke versie van delegatie: "doe deze taak". Sterke versie: "open de folder, doe wat de CLAUDE.md zegt".
+      </P>
+      <Callout kind="success">
+        <p className={`text-sm ${theme.textMuted}`}>
+          <strong className={theme.text}>Quote:</strong> "Solo Claude is een tool. Shared Claude Code is je oneerlijke voordeel." De grootste productiviteitswinst zit niet in jouw eigen prompts — die in de hefboom op je team. Eén goed opgezette client-folder bespaart een nieuwe medewerker weken inwerktijd.
+        </p>
+      </Callout>
+
+      <H3>Stap 10 — Globale vs. project-CLAUDE.md (Layer 1 van het ADK)</H3>
+      <P theme={theme}>
+        CLAUDE.md is geen één bestand — het zijn er twee, op twee plekken, met twee verschillende doelen. Beide worden bij élke sessie automatisch ingelezen door Claude Code. Wie ze niet kent gebruikt eigenlijk maar de helft van CLAUDE.md.
+      </P>
+      <div className="grid md:grid-cols-2 gap-3 my-4">
+        <div className={`p-4 rounded-xl border ${theme.border} ${theme.bgAlt}`}>
+          <div className={`text-xs font-semibold mb-1 ${theme.accentText}`}>GLOBAAL</div>
+          <div className={`font-mono text-sm mb-2 ${theme.text}`}>~/.claude/CLAUDE.md</div>
+          <p className={`text-sm ${theme.textMuted} mb-2`}>Geladen voor élk project. Dit is jouw constitutie — wie ben jij, hoe werk jij, wat zijn jouw defaults.</p>
+          <ul className={`space-y-1 text-sm ${theme.textMuted} list-none`}>
+            <li>• Default voice + schrijfstijl</li>
+            <li>• Tools die je altijd hebt (preferred shell, editor)</li>
+            <li>• Persoonlijke voorkeuren (taal, tijdzone, output-format)</li>
+            <li>• Globale do's & don'ts (bv. "altijd Nederlandstalig antwoorden")</li>
+          </ul>
+        </div>
+        <div className={`p-4 rounded-xl border ${theme.border} ${theme.bgAlt}`}>
+          <div className={`text-xs font-semibold mb-1 ${theme.accentText}`}>PROJECT</div>
+          <div className={`font-mono text-sm mb-2 ${theme.text}`}>{'<project>'}/CLAUDE.md</div>
+          <p className={`text-sm ${theme.textMuted} mb-2`}>Geladen alleen in deze repo. Dit is de project-specifieke briefing — architectuur, conventies, dingen-die-je-vergeet.</p>
+          <ul className={`space-y-1 text-sm ${theme.textMuted} list-none`}>
+            <li>• Architecture rules (hoe past het systeem in elkaar)</li>
+            <li>• Naming + repo conventions (file-names, function-style, casing)</li>
+            <li>• Test expectations (wanneer schrijven, wat telt mee)</li>
+            <li>• Repo-map (waar leeft wat, en waarom)</li>
+          </ul>
+        </div>
+      </div>
+      <P theme={theme}>
+        Bij elke Claude Code-sessie worden beide bestanden samengevoegd in de context. Globaal levert <em>jouw stijl</em>; project levert <em>de regels van deze codebase</em>. Voor persoonlijke project-aantekeningen die níet in git horen: <InlineCode theme={theme}>CLAUDE.local.md</InlineCode> in de project root (sta in <InlineCode theme={theme}>.gitignore</InlineCode> by default).
+      </P>
+      <Callout kind="tip">
+        <p className={`text-sm ${theme.textMuted}`}>
+          <strong className={theme.text}>De gouden regel:</strong> "Schrijf CLAUDE.md één keer goed. Bespaar jezelf 100 prompts later." Elke regel die in CLAUDE.md staat, hoef je nooit meer te tikken. De ROI is enorm — een uur schrijven verdient zichzelf in 2-3 dagen werk terug.
+        </p>
+      </Callout>
+
+      <H3>Stap 11 — Settings die niemand standaard goed heeft</H3>
+      <P theme={theme}>
+        Vier toggles in de Claude desktop-app maken meer verschil dan welk prompt-trucje dan ook. De defaults zijn voor mensen die net binnenkomen; jij wilt deze setup:
+      </P>
+      <div className="overflow-x-auto my-4">
+        <table className={`w-full text-sm border ${theme.border} rounded-lg overflow-hidden`}>
+          <thead className={theme.bgAlt}>
+            <tr>
+              <th className="text-left p-3">Setting</th>
+              <th className="text-left p-3">Aanrader</th>
+              <th className="text-left p-3">Waarom</th>
+            </tr>
+          </thead>
+          <tbody className={theme.bgCard}>
+            <tr className={`border-t ${theme.border}`}><td className="p-3 font-semibold">Computer Use</td><td className={`p-3 ${theme.accentText} font-semibold`}>AAN</td><td className="p-3">Laat Claude je scherm bekijken en kliks doen. Vereist voor visuele agents en de meeste skills die UI bekijken.</td></tr>
+            <tr className={`border-t ${theme.border}`}><td className="p-3 font-semibold">Browser Use</td><td className={`p-3 ${theme.textMuted} font-semibold`}>UIT</td><td className="p-3">Verwarrend met Computer Use. Zet uit tenzij je bewust web-automation doet — anders kost het tokens en latency voor niks.</td></tr>
+            <tr className={`border-t ${theme.border}`}><td className="p-3 font-semibold">Screen Recording</td><td className={`p-3 ${theme.textMuted} font-semibold`}>UIT</td><td className="p-3">Privacy. Standaard staat dit uit, check dat het zo blijft tenzij je een opname-skill bouwt.</td></tr>
+            <tr className={`border-t ${theme.border}`}><td className="p-3 font-semibold">Extended Thinking (Opus 4.7)</td><td className={`p-3 ${theme.accentText} font-semibold`}>AAN</td><td className="p-3">Voor serieus werk. Zet uit voor één-zin-antwoorden — anders 10× duurder zonder winst.</td></tr>
+            <tr className={`border-t ${theme.border}`}><td className="p-3 font-semibold">Auto-accept edits (Claude Code)</td><td className={`p-3 ${theme.accentText} font-semibold`}>AAN in eigen branch</td><td className="p-3">Versnelt vibecoden enorm — geen "ja" tikken bij elke wijziging. NOOIT op main, alleen in een branch waar je makkelijk kunt resetten.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <P theme={theme}>
+        En de allereerste setup-volgorde voor wie net begint:
+      </P>
+      <Pre theme={theme}>{`5-stap snel-start (15 minuten totaal):
+
+  1. claude.com/download         → desktop app installeren
+  2. Get Pro ($20/mo)            → Settings > Subscription
+  3. Open Cowork                 → tab in de app
+  4. Pick a folder               → wijs een synced folder aan
+                                   (iCloud / Dropbox / Drive)
+  5. Go                          → eerste prompt: "lees alles in deze folder
+                                   en vat samen wat je vindt"`}</Pre>
+      <Callout kind="warn">
+        <p className={`text-sm ${theme.textMuted}`}>
+          <strong className={theme.text}>Eén belangrijke check:</strong> de meeste tutorials slaan stap 4 over en wijzen een random Documents-folder aan. Doe dit op een synced location — anders kun je het werk dat je in Cowork doet niet vanaf je telefoon (Dispatch) of vanaf een andere computer aanraken. iCloud Drive of Dropbox zijn beide prima.
+        </p>
+      </Callout>
+
       <H2>Samenvatting — als je maar drie dingen onthoudt</H2>
       <Callout kind="success">
         <p className={`text-sm ${theme.textMuted} mb-2`}>
