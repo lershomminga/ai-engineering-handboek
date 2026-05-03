@@ -73,6 +73,7 @@ export default function ClaudeHandbook() {
     { id: "cost-opt", title: "Kosten optimaliseren", icon: TrendingUp, category: "Productie" },
     { id: "ecosystem", title: "AI Tools Ecosystem", icon: TrendingUp, category: "Ecosysteem" },
     { id: "cases", title: "Praktijkcases per industrie", icon: Bot, category: "Praktijk" },
+    { id: "workflow-checklist", title: "Workflow checklist & 20 prompt-wetten", icon: CheckCircle2, category: "Praktijk" },
     { id: "exercises", title: "Oefeningen per hoofdstuk", icon: Target, category: "Praktijk" },
     { id: "schemas", title: "Visuele schema's", icon: Layers, category: "Referentie" },
     { id: "glossary", title: "Woordenboek", icon: BookOpen, category: "Referentie" },
@@ -308,6 +309,7 @@ function getModuleContent(id, theme, glossarySearch, setGlossarySearch, setActiv
     case "cost-opt": return <CostOpt theme={theme} />;
     case "ecosystem": return <Ecosystem theme={theme} />;
     case "cases": return <Cases theme={theme} />;
+    case "workflow-checklist": return <WorkflowChecklist theme={theme} />;
     case "exercises": return <Exercises theme={theme} />;
     case "schemas": return <Schemas theme={theme} />;
     case "glossary": return <Glossary theme={theme} search={glossarySearch} setSearch={setGlossarySearch} />;
@@ -11296,6 +11298,308 @@ Resultaten:
         <li>3. <strong className={theme.text}>Haiku als default, Opus als upgrade.</strong> Cost-per-call schaalt lineair met volume; manufacturing en HR draaien grotendeels op Haiku met selective escalatie naar Sonnet/Opus voor complexe edge-cases.</li>
         <li>4. <strong className={theme.text}>Tool-use boven raw chat.</strong> De waardevolle deployments laten Claude tools aanroepen (Workday, SAP, CompStak, GOV.UK search) in plaats van alleen tekst genereren — daar zit de 5-10× productiviteitswinst.</li>
       </ol>
+    </div>
+  );
+}
+
+function WorkflowChecklist({ theme }) {
+  const laws = [
+    { phase: 1, n: 1, title: "Wees direct & duidelijk", bad: "Help me hiermee.", good: "Schrijf een 5-bullet samenvatting van de key takeaways uit dit rapport." },
+    { phase: 1, n: 2, title: "Geef context eerst", bad: "Schrijf een marketingplan.", good: "We lanceren een B2B SaaS voor accountantskantoren. Budget krap. Doel: 1.000 users in 90 dagen. Schrijf het marketingplan." },
+    { phase: 1, n: 3, title: "Anker in echte data", bad: "Wat zijn onze sales-trends?", good: "Hier zijn onze sales-data jan-apr 2026. Analyseer trends en highlight key insights." },
+    { phase: 1, n: 4, title: "Stel grenzen", bad: "Vertel me alles over AI.", good: "Leg de baten en risico's van generative AI in healthcare uit in maximaal 300 woorden, zonder tech-jargon." },
+    { phase: 1, n: 5, title: "Maak het persoonlijk", bad: "Geef me carrière-advies.", good: "Ik ben UX designer met 5 jaar ervaring en wil naar product management. Welke skills moet ik focussen?" },
+    { phase: 1, n: 6, title: "Vermeld wat je geprobeerd hebt", bad: "Hoe los ik deze error op?", good: "Ik heb X, Y en Z geprobeerd (details onder), maar krijg nog steeds deze stack trace. Hoe los ik dit op?" },
+    { phase: 2, n: 7, title: "Vraag om edge cases & trade-offs", bad: "Wat zijn de pros & cons?", good: "Wat zijn de pros, cons, edge cases en trade-offs van deze aanpak? Inclusief real-world voorbeelden." },
+    { phase: 2, n: 8, title: "Gebruik artifacts wijs", bad: "Vat deze data samen.", good: "Vat deze data samen in een markdown-tabel met kolommen: Metric, Value, Change, Insight." },
+    { phase: 2, n: 9, title: "Controleer het format", bad: "Geef me een plan.", good: "Geef me een 7-dagenplan in markdown met headings, checklist-items en tijdsinschattingen." },
+    { phase: 2, n: 10, title: "Lock de persona vast", bad: "Wat denk je?", good: "Jij bent een senior growth marketer met 10 jaar SaaS-ervaring. Wat zou je doen?" },
+    { phase: 2, n: 11, title: "Stuur de toon", bad: "Schrijf hierover.", good: "Schrijf een beknopte, conversationele uitleg voor een niet-technische doelgroep." },
+    { phase: 2, n: 12, title: "Vermijd prompt-conflicten", bad: "Leg het uitvoerig uit, maar hou het kort.", good: "Leg het uit in maximaal 500 woorden. Wees specifiek." },
+    { phase: 3, n: 13, title: "Daag uit & verfijn", bad: "Is dit goed?", good: "Wat heb ik gemist? Wat zijn de potentiële risico's? Wat zou jij ter discussie stellen?" },
+    { phase: 3, n: 14, title: "Itereer in lagen", bad: "Geef me een complete businessstrategie.", good: "Begin met de target audience. Daarna bouwen we de positionering op. Eén stap tegelijk." },
+    { phase: 3, n: 15, title: "Nodig pushback uit", bad: "Wat denk je?", good: "Bekritiseer dit plan brutaal. Wat zijn de zwakheden? Wat kan falen?" },
+    { phase: 3, n: 16, title: "Verifieer & fact-check", bad: "Klopt dit?", good: "Verifieer deze feiten en geef bronnen. Bij twijfel: zeg dat en leg uit waarom." },
+    { phase: 4, n: 17, title: "Benchmark tegen de besten", bad: "Hoe verbeter ik dit?", good: "Wat zou de top 1% van marketeers doen om deze landingpage te verbeteren? Gebruik echte voorbeelden." },
+    { phase: 4, n: 18, title: "Gebruik constraints als creatieve kracht", bad: "Maak een creatieve campagne.", good: "Maak een ad-campagne met een 100-character headline, één image-idee en $500 budget. Wees creatief." },
+    { phase: 4, n: 19, title: "Scheid denken en eindantwoord", bad: "Wat is de beste optie?", good: "Denk eerst hardop door de opties en redenering. Geef daarna pas het uiteindelijke beste antwoord met motivatie." },
+    { phase: 4, n: 20, title: "Beheer context", bad: "Geef alle details.", good: "Vat dit samen in 5 key-points. Voeg alleen essentiële context toe — kwaliteit > kwantiteit." },
+  ];
+
+  const phaseTitle = {
+    1: "Fase 1 — Vóór de prompt (input-kwaliteit)",
+    2: "Fase 2 — Structuur (controle over de output)",
+    3: "Fase 3 — Na het antwoord (refinement-loop)",
+    4: "Fase 4 — System thinking (Claude maximaal benutten)",
+  };
+
+  const checklist = [
+    {
+      title: "1. Setup",
+      items: [
+        "Pro of Max-plan geactiveerd ($20/mo voor Pro, $200/mo voor Max met Dispatch)",
+        "Desktop-app van Claude geïnstalleerd (Mac, Windows of Linux) — Cowork werkt alleen daar",
+        "Default model in Settings op Opus 4.7 met Extended Thinking aan",
+        "Computer Use aangezet in Settings (vereist voor sommige skills/agents)",
+        "Dispatch gekoppeld aan je telefoon — stuur taken vanaf je mobiel naar je desktop",
+        "Claude in Excel geïnstalleerd via de add-in store (formules, sheets, pivot-analyses)",
+        "Wispr Flow.ai geïnstalleerd voor voice input — typ 3× sneller, zeker op mobile",
+        "Obsidian (of een vault-tool naar keuze) geopend op je Cowork-folder",
+      ],
+    },
+    {
+      title: "2. Context-folder",
+      items: [
+        "Map op je computer aangemaakt: Claude Cowork (op een synced location, bv. iCloud/Dropbox)",
+        "Drie subfolders: ABOUT ME, OUTPUTS, TEMPLATES",
+        "about-me.md geschreven: rol, branche, doelen, schrijfstijl, voorkeuren — onder 2.000 woorden",
+        "anti-ai-writing-style.md aangemaakt met banned words: delve, leverage, comprehensive, robust, in conclusion, in today's fast-paced world, etc.",
+        "Globale instructies in Settings → Cowork geplakt (ABOUT ME en anti-stijl-regel)",
+        "Cowork verteld: \"lees ALWAYS ABOUT ME voordat je begint\"",
+        "Cowork verteld: \"lees NOOIT de OUTPUTS of TEMPLATES tenzij ik er expliciet naar verwijs\" (tokens sparen)",
+        "Deliverables eindigen altijd in OUTPUTS, onder een per-project subfolder",
+      ],
+    },
+    {
+      title: "3. Prompting",
+      items: [
+        "Begin met wat je wilt én hoe succes eruit ziet (\"output is goed als het X, Y en Z bevat\")",
+        "Voeg \"gebruik AskUserQuestion voordat je begint\" toe aan elke serieuze prompt — Claude vraagt eerst om missing context",
+        "Geef één goed voorbeeld in plaats van het te beschrijven (few-shot wint van uitleg)",
+        "Spreek je prompts in via Wispr Flow als context complex is — je praat sneller dan je typt",
+        "Edit je vorige bericht in plaats van een follow-up te sturen — minder context-pollution",
+        "Batch 3 taken in één bericht in plaats van 3 losse — bespaart sjab/context per call",
+        "Vertel Claude wat je WIL, niet alleen wat je niet wil (\"schrijf direct\" > \"schrijf niet vaag\")",
+        "Open een nieuwe chat zodra het topic kantelt — context van vorige onderwerp werkt tegen je",
+      ],
+    },
+    {
+      title: "4. Connectors",
+      items: [
+        "Gmail-connector: email drafts, inbox-search, snel reageren vanuit Claude",
+        "Gamma-connector: pitch decks vanuit een briefing, geen handmatig sliden meer",
+        "Google Drive-connector: documenten en spreadsheets direct doorzoekbaar",
+        "Notion-connector: workspace-pagina's, databases, wiki-search",
+        "Granola-connector: meeting-transcripts en action items uit calls",
+        "Calendar-connector: scheduling, conflict-detection, voorbereiding per meeting",
+        "GitHub-connector: code-projecten, PR-reviews, issue-triage",
+        "Connectors die je niet nodig hebt voor de huidige taak: uitzetten — anders worden ze meegestuurd in elke call (kosten + ruis)",
+      ],
+    },
+    {
+      title: "5. Skills",
+      items: [
+        "Open Cowork en vraag de skill-creator om een nieuwe skill",
+        "Beantwoord de interview-vragen specifiek: scope, triggers, voorbeelden, stijl",
+        "Run Capabilities terwijl Claude de skill genereert (bekijk wat hij maakt)",
+        "Sla de skill op via Settings → Capabilities (niet zomaar in een random folder)",
+        "Test de skill met 5 verschillende phrasings — als hij niet triggert, herschrijf de description",
+        "Voeg een \"do NOT use for\"-regel toe aan elke description — anders triggert hij ook in de verkeerde context",
+        "Bouw skills uit eerdere succesvolle conversaties via right-click → \"create skill from this\"",
+        "Browse Anthropic's plugin-library voor pre-built skills voor je hele team",
+      ],
+    },
+    {
+      title: "6. Projects",
+      items: [
+        "Eén Project per recurring deliverable (weekly newsletter, klantrapport, sprint-report)",
+        "Importeer je oude browser-Projects naar Cowork (Settings → Import)",
+        "Upload één gold-standard voorbeeld per Project — laat Claude zien wat \"goed\" betekent",
+        "Project-instructies onder de 8 regels — kort genoeg om opnieuw te lezen, lang genoeg om te sturen",
+        "Schedule taken in voor recurring werk (weekly newsletter draait elk vrijdag 09:00 zelf)",
+        "Hou de desktop-app aan staan — anders firen scheduled tasks niet",
+        "Maak \"lees alles in deze folder\" je eerste prompt in elk nieuw Project",
+        "Bewaar winnende outputs als templates in TEMPLATES-folder — die wordt je eigen library",
+      ],
+    },
+    {
+      title: "7. Design & Code",
+      items: [
+        "claude.ai/design openen voor landingspagina's en UI-prototypes",
+        "DESIGN.md brand-bestand uploaden: kleuren, typografie, voice, do's & don'ts",
+        "\"Tweaks\" gebruiken voor layout-variaties — laat Claude 3 versies geven, kies de beste",
+        "Edit-on-canvas voor pixel-changes — direct op het ontwerp slepen, geen gedoe met CSS",
+        "Claude Code openen voor volledige websites of meer-dan-één-pagina projecten",
+        "Een gratis GitHub-account koppelen voor live deployment (Vercel/Netlify auto-deploy bij push)",
+        "VS Code met Skip Permissions in Claude Code voor sneller vibecoden (alleen in eigen branch!)",
+        "CLAUDE.md in elk code-project — Claude leest hem altijd eerst, scheelt 100 corrigerende prompts",
+      ],
+    },
+    {
+      title: "8. Research & Search",
+      items: [
+        "Web Search aan in de prompt-bar (icoontje onder het invoerveld)",
+        "Research mode voor diepe multi-source rapporten (15-30 min, levert paper-quality output)",
+        "Vraag Claude om 5 verschillende searches te doen en gaps te identificeren",
+        "Sla bevindingen op in research-brief.md — deelbaar, opnieuw bruikbaar",
+        "Gebruik Grok voor real-time news die Claude nog niet heeft (X/Twitter timeline)",
+        "Gebruik ChatGPT Deep Research voor lange rapporten als second opinion",
+        "Vraag Claude expliciet om te flaggen waar bronnen elkaar tegenspreken",
+        "Prioriteer 2025-2026 bronnen in research-prompts — ouder is vaak achterhaald",
+      ],
+    },
+    {
+      title: "9. Token Economy",
+      items: [
+        "Plan eerst in chat (goedkoop), bouw daarna in Cowork (duur per file)",
+        "Converteer PDF's en screenshots naar markdown vóór je ze upload — 5-10× minder tokens",
+        "Restart conversaties elke ~20 berichten — context wordt traag en Claude gaat \"af\"",
+        "Switch naar Sonnet voor grammatica-checks en korte antwoorden — Opus is overkill",
+        "Zet Extended Thinking uit voor simpele taken — bespaart denk-tokens en latency",
+        "Selecteer ZERO folders als de taak geen files nodig heeft (default staat alles aan)",
+        "Run scheduled tasks voor recurring werk — geen handmatige prompt elke keer",
+        "Spreid sessies over ochtend/middag/avond — lange sessies degraderen je context-window",
+      ],
+    },
+  ];
+
+  return (
+    <div>
+      <H1>Workflow checklist & 20 prompt-wetten</H1>
+      <P theme={theme}>
+        Dit hoofdstuk bundelt drie frameworks die je elke werkdag kunt toepassen, samengevat uit het meest gedeelde advies in de Claude-community (Ruben Hassid, beyond_intelligence, tenfoldmarc, alex.snippet — najaar 2025/voorjaar 2026). Drie eenvoudige beslissingen die het verschil maken tussen "ik gebruik Claude" en "ik ben snel met Claude": <strong className={theme.text}>welke modus, welke wet, welk vinkje</strong>.
+      </P>
+      <P theme={theme}>
+        Lees dit hoofdstuk niet één keer en vergeet het. Kom terug, vink af, herhaal. Het is bewust een quick-reference: korte stukken tekst, veel checklists, weinig essay. Voor diepgang per onderwerp verwijzen we door naar de hoofdstukken die er al zijn.
+      </P>
+
+      <H2>1. Modus-keuze — kies waar je werkt</H2>
+      <P theme={theme}>
+        Voor je überhaupt aan een prompt begint: bedenk in welke laag je gaat werken. Verkeerde laag = uren verspild aan iets dat in een andere modus 5 minuten was. De keuze:
+      </P>
+      <div className="overflow-x-auto my-4">
+        <table className={`w-full text-sm border ${theme.border} rounded-lg overflow-hidden`}>
+          <thead className={theme.bgAlt}>
+            <tr>
+              <th className="text-left p-3">Modus</th>
+              <th className="text-left p-3">Wanneer</th>
+              <th className="text-left p-3">Waarschuwing</th>
+            </tr>
+          </thead>
+          <tbody className={theme.bgCard}>
+            <tr className={`border-t ${theme.border}`}><td className="p-3 font-semibold">Chat (claude.ai)</td><td className="p-3">"Welk jaar is het?", snelle factchecks, één-zin-vragen</td><td className="p-3">Bouw hier <strong className={theme.text}>niets</strong>. Dit is de ChatGPT-versie.</td></tr>
+            <tr className={`border-t ${theme.border}`}><td className="p-3 font-semibold">Projects (browser)</td><td className="p-3">Lichte recurring taken, sjablonen, contentkalender met team</td><td className="p-3">Browser-based — geen native files, geen MCP, geen scheduled tasks.</td></tr>
+            <tr className={`border-t ${theme.border}`}><td className="p-3 font-semibold">Cowork (desktop)</td><td className="p-3">Solo deep work met echte files, PDF's, Excel, transcripts, Obsidian-vault</td><td className="p-3">Vereist desktop-app open. Files in folder = verteringscontext.</td></tr>
+            <tr className={`border-t ${theme.border}`}><td className="p-3 font-semibold">Claude Code (CLI)</td><td className="p-3">Skills, plugins, MCP, automation, hooks, subagents — power-user-laag</td><td className="p-3">Steepere leercurve, maar de plek waar serieuze gebruikers daadwerkelijk wonen.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <Callout kind="tip">
+        <p className={`text-sm ${theme.textMuted}`}>
+          <strong className={theme.text}>Quote die klopt:</strong> "Iedereen debatteert Chat vs Projects. De serieuze gebruikers zijn allang stilletjes overgestapt naar Claude Code." — @tenfoldmarc. Vertaling: zodra je iets wilt dat herhaalbaar, automatiseerbaar of file-zwaar is, is browser-Claude de verkeerde laag. Zie het hoofdstuk <em>Het Claude Universum</em> voor een volledige laag-vergelijking en het 5-laags Agent Development Kit-model in <em>Claude Code (CLI) volledig</em>.
+        </p>
+      </Callout>
+
+      <H2>2. De 20 wetten van Claude prompting</H2>
+      <P theme={theme}>
+        Vier fasen × 5 wetten = 20 hefbomen die je per prompt langs kunt lopen. De wetten zijn cumulatief: hoe meer je ervan toepast, hoe beter de output. Begin met fase 1 (input-kwaliteit) — die levert de grootste sprong. Fase 4 (system thinking) is voor wanneer je productie-grade kwaliteit nodig hebt.
+      </P>
+      {[1, 2, 3, 4].map(p => (
+        <div key={p} className="my-5">
+          <H3>{phaseTitle[p]}</H3>
+          <div className="space-y-3 my-3">
+            {laws.filter(l => l.phase === p).map(law => (
+              <div key={law.n} className={`p-4 rounded-xl border ${theme.border} ${theme.bgAlt}`}>
+                <div className="flex items-baseline gap-3 mb-2">
+                  <span className={`text-xs px-2 py-0.5 rounded ${theme.accent} text-white font-semibold`}>WET {law.n}</span>
+                  <h4 className="font-semibold">{law.title}</h4>
+                </div>
+                <div className="grid md:grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <div className={`text-xs font-semibold mb-1 ${theme.textSubtle}`}>X Zwakke prompt</div>
+                    <div className={`p-2 rounded ${theme.codeBlock} border ${theme.border} font-mono text-xs ${theme.textMuted}`}>{law.bad}</div>
+                  </div>
+                  <div>
+                    <div className={`text-xs font-semibold mb-1 ${theme.accentText}`}>V Sterke prompt</div>
+                    <div className={`p-2 rounded ${theme.codeBlock} border ${theme.accentBorder} font-mono text-xs ${theme.text}`}>{law.good}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+      <Callout kind="success">
+        <p className={`text-sm ${theme.textMuted}`}>
+          <strong className={theme.text}>Pragmatische volgorde:</strong> wet 1+2+5 ("direct, context, persoonlijk") halen de helft van de winst. Wet 9+10+12 ("format, persona, geen conflicten") doen het meeste voor consistentie. Wet 13+15+16 (verfijnen, pushback, verifiëren) zijn waar je van "goed" naar "publiceerbaar" gaat. Wet 17-20 leer je vanzelf zodra je serieus met Claude bouwt.
+        </p>
+      </Callout>
+
+      <H2>3. Claude Mastery Checklist (9 categorieën)</H2>
+      <P theme={theme}>
+        Ruben Hassid's 70+ punten checklist — dichtgevochten van zijn dagelijkse Cowork-praktijk en hier per categorie vertaald. Niet alles is voor iedereen relevant, maar als je nooit eerder een ABOUT ME-bestand schreef of nooit Connectors uitzet als je ze niet nodig hebt, ligt hier nog flink wat winst.
+      </P>
+      <div className="space-y-4 my-5">
+        {checklist.map(cat => (
+          <div key={cat.title} className={`p-4 rounded-xl border ${theme.border} ${theme.bgCard}`}>
+            <h3 className={`font-semibold mb-3 ${theme.accentText}`}>{cat.title}</h3>
+            <ul className="space-y-2 text-sm list-none">
+              {cat.items.map((item, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <span className={`mt-0.5 inline-block w-4 h-4 border ${theme.border} rounded flex-shrink-0`}></span>
+                  <span className={theme.textMuted}><span dangerouslySetInnerHTML={{ __html: item.replace(/\*\*(.*?)\*\*/g, `<strong class="${theme.text.replace('text-', 'text-')}">$1</strong>`) }} /></span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+      <Callout kind="warn">
+        <p className={`text-sm ${theme.textMuted}`}>
+          <strong className={theme.text}>Niet zomaar overschrijven:</strong> deze checklist is geoptimaliseerd voor solo knowledge workers (consultants, marketeers, analisten). Voor ontwikkelaars is de Claude Code-werkstroom belangrijker dan Cowork; voor teams zijn shared Cowork-skills belangrijker dan een ABOUT ME per persoon. Pak wat past bij jouw context, sla de rest over.
+        </p>
+      </Callout>
+
+      <H2>4. Stop met dezelfde prompt overtypen</H2>
+      <P theme={theme}>
+        Als je dezelfde setup-prompt 10× per week typt, doe je AI achterstevoren. Bouw 'm één keer, sla 'm op, roep 'm aan met een paar tekens. Drie mechanismen, oplopend in kracht:
+      </P>
+      <div className="grid md:grid-cols-3 gap-3 my-4">
+        <Card theme={theme}>
+          <div className="font-semibold mb-1">Slash commands (Claude Code)</div>
+          <p className={`text-sm ${theme.textMuted}`}>Maak <InlineCode theme={theme}>~/.claude/commands/email.md</InlineCode> met je standaard email-prompt. Roep aan met <InlineCode theme={theme}>/email</InlineCode>. Diepere uitleg in <em>Claude Code (CLI) volledig</em>.</p>
+        </Card>
+        <Card theme={theme}>
+          <div className="font-semibold mb-1">Mac Text Replacement</div>
+          <p className={`text-sm ${theme.textMuted}`}>Systeem-instellingen → Toetsenbord → Tekstvervangingen. Type <InlineCode theme={theme}>;email</InlineCode>, krijgt je hele 200-woorden-prompt. Werkt overal: Claude, Mail, Slack.</p>
+        </Card>
+        <Card theme={theme}>
+          <div className="font-semibold mb-1">Espanso / AutoHotkey (Win)</div>
+          <p className={`text-sm ${theme.textMuted}`}>Cross-platform alternatief voor Mac Text Replacement. Espanso (open source) ondersteunt variabelen, datum, en clipboard-injection. AutoHotkey op Windows hetzelfde idee.</p>
+        </Card>
+      </div>
+      <Pre theme={theme}>{`# Voorbeeld: ~/.claude/commands/script.md
+Je bent mijn productiviteits-coach. Genereer een gepersonaliseerde
+ochtend-briefing met:
+1. De 3 belangrijkste taken uit mijn calendar (vandaag)
+2. Onbeantwoorde Gmail-threads die actie nodig hebben
+3. Energy-level advies op basis van de meeting-load
+4. Eén "deep work"-blok dat ik vandaag echt moet beschermen
+
+Houd het onder 150 woorden. Geen emoji's. Direct naar mij geschreven.`}</Pre>
+      <P theme={theme}>
+        Op de mobiel: iOS heeft "Tekstvervanging" onder Algemeen → Toetsenbord; Android heeft "Persoonlijk woordenboek". Werkt overal waar je tekst typt.
+      </P>
+      <Callout kind="tip">
+        <p className={`text-sm ${theme.textMuted}`}>
+          <strong className={theme.text}>Praktische metric:</strong> @tenfoldmarc runt <InlineCode theme={theme}>/script</InlineCode> elke ochtend — 0,3 seconde i.p.v. 4 minuten typen. Op jaarbasis: 4 min × 250 werkdagen = 16 uur uitgespaard, alleen al op één routine. Multipliceer over je 5-10 standaard prompts.
+        </p>
+      </Callout>
+
+      <H2>Samenvatting — als je maar drie dingen onthoudt</H2>
+      <Callout kind="success">
+        <p className={`text-sm ${theme.textMuted} mb-2`}>
+          <strong className={theme.text}>Drie dingen die deze week meteen winst opleveren:</strong>
+        </p>
+        <ol className={`text-sm ${theme.textMuted} space-y-2 list-none`}>
+          <li>1. <strong className={theme.text}>Verhuis je écht werk naar Cowork of Code.</strong> Stop met serieus werk in browser-Chat. Eén middag setup, jarenlang sneller.</li>
+          <li>2. <strong className={theme.text}>Schrijf één about-me.md plus één anti-stijl-bestand.</strong> Zet ze in je global instructions. Vanaf morgen klinkt elke output als jou — niet als ChatGPT.</li>
+          <li>3. <strong className={theme.text}>Maak één slash command of text-shortcut.</strong> Voor de prompt die je het vaakst typt. Eén keer schrijven, eindeloos hergebruiken.</li>
+        </ol>
+        <p className={`text-sm ${theme.textMuted} mt-3`}>
+          De 20 wetten en de complete checklist zijn er om naar terug te keren — niet om in één zit te memoriseren. Bookmark dit hoofdstuk, vink af in eigen tempo.
+        </p>
+      </Callout>
     </div>
   );
 }

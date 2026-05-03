@@ -24,7 +24,7 @@ Interactief, Nederlandstalig studieboek (single-page React app) waarin alles sta
 ├── src/
 │   ├── main.jsx            # entry, mount React
 │   ├── index.css           # Tailwind directives + height:100%
-│   └── App.jsx             # ALLE inhoud in één file (~7000 regels na uitbreiding apr 2026)
+│   └── App.jsx             # ALLE inhoud in één file (~11700 regels na uitbreiding mei 2026)
 ├── tailwind.config.js
 ├── postcss.config.js
 ├── vite.config.js          # poort 5175, strictPort, open: true
