@@ -11586,6 +11586,124 @@ Houd het onder 150 woorden. Geen emoji's. Direct naar mij geschreven.`}</Pre>
         </p>
       </Callout>
 
+      <H2>5. Van prompts naar systeem — 5 vervolgstappen</H2>
+      <P theme={theme}>
+        Als je modus-keuze, prompt-wetten en slash commands eenmaal onder de knie hebt, ontstaat de natuurlijke vraag: hoe maak je hier een <em>systeem</em> van dat zonder jouw aandacht doordraait? Vijf concrete stappen, gedistilleerd uit @tenfoldmarc's "Master Claude in a Weekend"-serie. Elke stap heeft een sleutel-inzicht en een concrete eerste actie.
+      </P>
+
+      <H3>Stap 4 — Maak het draaiend zonder jou</H3>
+      <P theme={theme}>
+        De allerhoogste hefboom: <strong className={theme.text}>managed agents / Routines</strong> (in Cowork als "scheduled tasks", in Anthropic Cloud als de Routines-feature). Je definieert een taak één keer, en Anthropic's servers runnen 'm op cron-basis. Laptop dicht, wifi uit — Claude blijft werken.
+      </P>
+      <P theme={theme}>
+        Concrete killer-use-case: een Slack-bericht elke ochtend om 07:00 met je belangrijkste KPI's (ad spend, revenue, cost-per-call), getrokken uit Stripe/GA/Linear via MCP-connectors, samengevat door Claude. Nul klikken vanaf jouw kant. Set once, runs forever. Voeg toe naar smaak: dagelijkse rapporten, weekly client recaps, monthly P&L. Volledige uitleg in het hoofdstuk <em>Cowork, Dispatch & Routines</em>.
+      </P>
+      <Callout kind="success">
+        <p className={`text-sm ${theme.textMuted}`}>
+          <strong className={theme.text}>Quote:</strong> "Dit is het niveau dat de meeste mensen nooit halen. Claude is geen tool meer. Het is een teamlid dat niet slaapt."
+        </p>
+      </Callout>
+
+      <H3>Stap 5 — Voeg je eerste Skill toe</H3>
+      <P theme={theme}>
+        Een Skill is een klein bestandje (<InlineCode theme={theme}>SKILL.md</InlineCode> + optioneel scripts) dat Claude precies leert hóe jij iets doet. Claude laadt skills <strong className={theme.text}>automatisch</strong> op basis van de taak — je merkt niet eens dat hij ze gebruikt. Voorbeelden van populaire eerste skills: <em>scripts schrijven in mijn voice</em>, <em>carousels bouwen</em>, <em>klanten onboarden</em>, <em>bonnen sorteren voor de boekhouding</em>.
+      </P>
+      <P theme={theme}>
+        <strong className={theme.text}>De aangeraden eerste skill is altijd</strong> <InlineCode theme={theme}>brand-voice</InlineCode>. Het verandert direct de toon van álles wat Claude voor je schrijft — geen ChatGPT-cadans meer, maar de jouwe. Zie het hoofdstuk <em>Claude Skills</em> voor de skill-creator workflow en SKILL.md frontmatter.
+      </P>
+      <Callout kind="tip">
+        <p className={`text-sm ${theme.textMuted}`}>
+          <strong className={theme.text}>Mentaal model:</strong> "Als plugins toolkits zijn, dan zijn skills jouw persoonlijke playbook erbinnen." Plugins geven Claude nieuwe acties; skills vertellen Claude hoe jíj die acties uitvoert.
+        </p>
+      </Callout>
+
+      <H3>Stap 6 — Kies één plugin (geen vijftig)</H3>
+      <P theme={theme}>
+        De plugin-store van Cowork heeft honderden plugins. Installeer ze niet allemaal — kies de ene die past bij wat jij élke week doet. Drie veelvoorkomende rolletjes met hun startset:
+      </P>
+      <div className="grid md:grid-cols-3 gap-3 my-4">
+        <Card theme={theme}>
+          <div className="font-semibold mb-1">Content creators</div>
+          <p className={`text-sm ${theme.textMuted}`}><InlineCode theme={theme}>brand-voice</InlineCode> + <InlineCode theme={theme}>/script</InlineCode> + <InlineCode theme={theme}>/carousel</InlineCode>. Schrijven, video-scripts, social posts in eigen stem.</p>
+        </Card>
+        <Card theme={theme}>
+          <div className="font-semibold mb-1">Business owners</div>
+          <p className={`text-sm ${theme.textMuted}`}><InlineCode theme={theme}>/inbox-zero</InlineCode> + <InlineCode theme={theme}>/accounting</InlineCode> + <InlineCode theme={theme}>/onboard</InlineCode>. Email-triage, boekhouding, klant-onboarding.</p>
+        </Card>
+        <Card theme={theme}>
+          <div className="font-semibold mb-1">Data people</div>
+          <p className={`text-sm ${theme.textMuted}`}><InlineCode theme={theme}>/dashboard-builder</InlineCode> + <InlineCode theme={theme}>business-dashboard</InlineCode>. KPI-overzichten, periodieke rapporten, ad-hoc data-vragen.</p>
+        </Card>
+      </div>
+      <Callout kind="warn">
+        <p className={`text-sm ${theme.textMuted}`}>
+          <strong className={theme.text}>Eén-plugin-regel:</strong> "Eén plugin die je écht gebruikt, verslaat 50 die je niet gebruikt. Master eerst één. Voeg dan toe." Veel installeren = veel context-overhead voor niks. Je kennis schaalt niet met het aantal — kennis schaalt met diepte op één.
+        </p>
+      </Callout>
+
+      <H3>Stap 7 — Verbind je tools met MCPs</H3>
+      <P theme={theme}>
+        MCPs (Model Context Protocol-servers) laten Claude Code letterlijk in je apps reiken: Slack, Gmail, Notion, Stripe, Google Drive, Linear, GitHub, GoHighLevel. Eén commando, échte actie — geen tab-switching meer, geen copy-paste.
+      </P>
+      <Pre theme={theme}>{`# In Claude Code:
+/mcp add stripe        # voeg de Stripe MCP-server toe
+/mcp add slack         # idem voor Slack
+/mcp list              # toon actieve servers
+
+# Vervolgens kun je dingen vragen als:
+"Pull last week's Stripe revenue and post it in #wins"
+# → 4 seconden, klaar.`}</Pre>
+      <P theme={theme}>
+        Volledige MCP-uitleg (hoe servers werken, eigen MCP-server bouwen, security-overwegingen) staat in het hoofdstuk <em>Tools & MCP</em>. De <InlineCode theme={theme}>/mcp</InlineCode> slash command in Claude Code is je dagelijkse interface ervoor — leren vóór alle andere tooling.
+      </P>
+      <Callout kind="tip">
+        <p className={`text-sm ${theme.textMuted}`}>
+          <strong className={theme.text}>Quote:</strong> "Zonder MCPs is Claude een slimme vreemde. Mét MCPs is hij je COO." Het verschil tussen "AI die kan praten over je business" en "AI die je business <em>doet</em>".
+        </p>
+      </Callout>
+
+      <H3>Stap 8 — De twee bestanden die je AI runnen</H3>
+      <P theme={theme}>
+        In elke serieuze Claude Code-project root horen twee bestanden. Dump er geen 30 random docs in — twee goede bestanden verslaan vijftig middelmatige.
+      </P>
+      <div className="space-y-3 my-4">
+        <div className={`p-4 rounded-xl border ${theme.border} ${theme.bgAlt}`}>
+          <h4 className={`font-semibold ${theme.accentText}`}>1. CLAUDE.md (jouw context)</h4>
+          <P theme={theme}>
+            Wie je bent. Wat je doet. Aan wie je verkoopt. Wat deze week prioriteit heeft. @tenfoldmarc's eigen CLAUDE.md is ~200 regels en wordt élke sessie automatisch ingelezen door Claude Code. Eén goed geschreven CLAUDE.md doet meer dan 50 corrigerende prompts achteraf.
+          </P>
+          <Pre theme={theme}>{`# CLAUDE.md template (hoofdsecties)
+- Wie ik ben en wat het bedrijf doet
+- Doelgroep en voornaamste klanten
+- Wat we deze maand/quarter prioriteit geven
+- Schrijfstijl-regels (toon, lengte, do's & don'ts)
+- Tech stack en file-conventies (voor code-projects)
+- Wat NIET te doen (typische valkuilen voor jou)`}</Pre>
+        </div>
+        <div className={`p-4 rounded-xl border ${theme.border} ${theme.bgAlt}`}>
+          <h4 className={`font-semibold ${theme.accentText}`}>2. anti-style.md (verboden frasen)</h4>
+          <P theme={theme}>
+            Elke frase die Claude <strong className={theme.text}>nooit</strong> mag gebruiken. Klassieke ban-list: <InlineCode theme={theme}>delve</InlineCode>, <InlineCode theme={theme}>boundaries</InlineCode>, <InlineCode theme={theme}>dive into</InlineCode>, <InlineCode theme={theme}>elevate</InlineCode>, <InlineCode theme={theme}>leverage</InlineCode>, <InlineCode theme={theme}>comprehensive</InlineCode>, <InlineCode theme={theme}>robust</InlineCode>, <InlineCode theme={theme}>in conclusion</InlineCode>, <InlineCode theme={theme}>in today's fast-paced world</InlineCode>. Voor élk verbannen woord: noteer korter een vervangwoord dat jouw stem heeft.
+          </P>
+          <Pre theme={theme}>{`# anti-style.md voorbeeld
+
+NEVER USE         USE INSTEAD
+delve into        kijken naar / onderzoeken
+leverage          gebruiken
+comprehensive     volledig (of gewoon weglaten)
+robust            betrouwbaar / sterk
+elevate           verbeteren / opvoeren
+boundaries        grenzen
+in conclusion     (gewoon afsluiten zonder kop)
+fast-paced world  (skip — cliché)`}</Pre>
+        </div>
+      </div>
+      <Callout kind="success">
+        <p className={`text-sm ${theme.textMuted}`}>
+          <strong className={theme.text}>Twee-bestanden-regel:</strong> "Dump geen 30 random docs in. Twee goede bestanden verslaan vijftig middelmatige." Dezelfde discipline als bij plugins — diepte over breedte. Eén CLAUDE.md die elke sessie geladen wordt en élk antwoord beïnvloedt is meer waard dan 30 docs die Claude misschien wel of niet leest.
+        </p>
+      </Callout>
+
       <H2>Samenvatting — als je maar drie dingen onthoudt</H2>
       <Callout kind="success">
         <p className={`text-sm ${theme.textMuted} mb-2`}>
