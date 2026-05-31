@@ -1,0 +1,45 @@
+# Promptfoo eval-config. Run met:
+#   promptfoo eval --config promptfoo.yaml
+# Of in GitHub Actions:
+#   uses: promptfoo/promptfoo-action@v1
+
+description: "Claude Engineering Handboek — factual recall eval"
+
+prompts:
+  - "Antwoord beknopt: {{question}}"
+
+providers:
+  - id: anthropic:messages:claude-haiku-4-5
+    config:
+      max_tokens: 200
+      temperature: 0
+  - id: anthropic:messages:claude-sonnet-4-6
+    config:
+      max_tokens: 200
+      temperature: 0
+
+tests:
+  - vars:
+      question: "Wat kost Claude Haiku 4.5 per 1M input tokens?"
+    assert:
+      - type: icontains
+        value: "0.80"
+  - vars:
+      question: "Wat is de default cache TTL bij Anthropic per mei 2026?"
+    assert:
+      - type: icontains
+        value: "5 min"
+  - vars:
+      question: "Welk MCP-transport is deprecated?"
+    assert:
+      - type: icontains
+        value: "SSE"
+  - vars:
+      question: "Hoeveel hook-events zijn er in Claude Code v2.1.141?"
+    assert:
+      - type: icontains
+        value: "27"
+
+# Threshold-gating voor CI:
+#   --output results.json
+# Daarna in script: assert results.summary.score >= 0.80

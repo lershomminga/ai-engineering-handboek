@@ -1,0 +1,48 @@
+# LiteLLM productie-config.
+# Start: litellm --config 02_litellm_proxy.yaml
+# Daarna: zelfde OpenAI-API-compat tegen http://localhost:4000
+
+model_list:
+  - model_name: prod-classifier
+    litellm_params:
+      model: anthropic/claude-haiku-4-5
+      api_key: os.environ/ANTHROPIC_API_KEY
+    model_info:
+      tier: cheap
+      max_tokens: 1024
+
+  - model_name: prod-reasoning
+    litellm_params:
+      model: anthropic/claude-sonnet-4-6
+      api_key: os.environ/ANTHROPIC_API_KEY
+    model_info:
+      tier: balanced
+
+  - model_name: prod-heavy
+    litellm_params:
+      model: anthropic/claude-opus-4-7
+      api_key: os.environ/ANTHROPIC_API_KEY
+    model_info:
+      tier: premium
+
+# Fallback-chain: bij rate-limit op Sonnet → Haiku, dan Llama via OpenRouter
+router_settings:
+  routing_strategy: latency-based
+  fallbacks:
+    - prod-reasoning: ["prod-classifier"]
+    - prod-heavy: ["prod-reasoning", "prod-classifier"]
+
+# Budget-cap per virtual-key (multi-tenant)
+litellm_settings:
+  set_verbose: false
+  database_url: postgresql://postgres:postgres@localhost:5432/litellm
+  cache:
+    type: redis
+    host: localhost
+    port: 6379
+  budget_duration: 30d
+  max_budget: 200  # USD per maand globaal
+
+  alerting:
+    - slack_webhook: ${SLACK_WEBHOOK_URL}
+      alert_types: ["budget_alerts", "spend_logs", "outage_alerts"]

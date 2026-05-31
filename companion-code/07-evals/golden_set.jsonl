@@ -1,0 +1,10 @@
+{"input": "Wat kost Claude Haiku 4.5 per 1M input tokens?", "expected": "$0.80", "category": "factual"}
+{"input": "Wat is de default cache TTL bij Anthropic per mei 2026?", "expected": "5 minuten", "category": "factual"}
+{"input": "Welk MCP-transport is deprecated?", "expected": "SSE", "category": "factual"}
+{"input": "Wat staat #1 in de OWASP LLM Top-10?", "expected": "prompt injection", "category": "factual"}
+{"input": "Hoeveel hook-events zijn er in Claude Code v2.1.141?", "expected": "27", "category": "factual"}
+{"input": "Welk Anthropic-model is goedkoopst?", "expected": "Haiku", "category": "factual"}
+{"input": "Wat reduceert Contextual Retrieval volgens Anthropic-benchmark?", "expected": "67%", "category": "factual"}
+{"input": "Welke voice-provider heeft sub-90ms TTFB?", "expected": "Cartesia", "category": "factual"}
+{"input": "Wat doet RouteLLM in ICLR-2025 benchmarks?", "expected": "85%", "category": "factual"}
+{"input": "Welk framework is in 2026 productie-default voor multi-agent met checkpointing?", "expected": "LangGraph", "category": "factual"}

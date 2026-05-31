@@ -1,0 +1,55 @@
+--- DOC 1 ---
+Prompt caching is een Anthropic feature die herhaaldelijke prompt-prefixen
+cached om 90% kostbesparing te leveren op cached input-tokens. Default TTL
+is 5 minuten sinds maart 2026; expliciete 'ttl':'1h' is beschikbaar tegen
+2× write-cost. Workspace-level cache-isolation kwam in februari 2026.
+
+--- DOC 2 ---
+Extended Thinking is een Claude 4.x feature waarbij het model intern langer
+redeneert vóór het antwoord. Adaptive Thinking laat Claude zelf beslissen
+hoe lang via effort=low|medium|high|xhigh|max. Thinking-tokens tellen mee
+in output-budget.
+
+--- DOC 3 ---
+Het Model Context Protocol (MCP) is een open standaard die Claude koppelt
+aan tools, resources en prompts. Sinds nov 2024 door Anthropic geintroduceerd,
+inmiddels 9.652+ servers in de officiele Registry. Transport: stdio (lokaal),
+Streamable HTTP (remote, SSE is deprecated).
+
+--- DOC 4 ---
+RAG staat voor Retrieval-Augmented Generation. De basis-pipeline is: documenten
+chunken, embeddings maken, opslaan in vector-DB, query embedden, top-K
+retrieven, en als context aan LLM voeden. Productie-standaard 2026: hybrid
+search (BM25 + dense + RRF) + cross-encoder reranking.
+
+--- DOC 5 ---
+Computer Use is een Anthropic API-tool waarbij Claude een sandbox-VM bestuurt:
+muis, toetsenbord, screenshots. Vereist eigen Docker-host (Anthropic levert
+reference image). Beta sinds computer-use-2025-11-24 header.
+
+--- DOC 6 ---
+Tokens zijn de atomaire eenheden waarin een LLM tekst leest en schrijft.
+Anthropic gebruikt BPE-tokenisering. Engels: ~4 chars per token. Nederlands:
+1.3-1.8× meer tokens per gelijke betekenis ('token-tax').
+
+--- DOC 7 ---
+Claude Code is Anthropic's CLI voor developers. Bevat slash-commands, hooks,
+MCP-server-integratie, skills, subagents. Sinds v2.1.141 zijn er 27+ hook-events
+beschikbaar. settings.json voor configuratie.
+
+--- DOC 8 ---
+Claude Cowork (GA april 2026) is de team-laag van het Claude-ecosysteem:
+gedeelde skills, plugins, MCP-connectors en SSO. Dispatch is een Cowork-feature
+voor mobiel-naar-desktop bridge. Vereist Max-plan ($200/mo) bij launch.
+
+--- DOC 9 ---
+Anthropic prijzen mei 2026: Haiku 4.5 = $0.80/1M input, $4/1M output.
+Sonnet 4.6 = $3/1M input, $15/1M output. Opus 4.7 = $15/1M input, $75/1M output.
+Batch API geeft 50% korting met 24u SLA. Prompt caching levert 90% korting op
+cached tokens.
+
+--- DOC 10 ---
+Workload Identity Federation (WIF) is sinds 2026 ondersteund door Anthropic
+voor admin-API access. Vervangt statische sk-ant-admin keys door OIDC-tokens
+via AWS, GCP, Azure, GitHub Actions, Okta, Kubernetes of SPIFFE. Geen
+long-lived secrets meer.

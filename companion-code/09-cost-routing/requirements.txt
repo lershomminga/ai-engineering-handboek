@@ -1,0 +1,4 @@
+anthropic>=0.45.0
+python-dotenv>=1.0.0
+voyageai>=0.2.0
+numpy>=1.24.0
