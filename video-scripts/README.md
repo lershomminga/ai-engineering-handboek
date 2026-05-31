@@ -5,6 +5,10 @@ moeten bedenken wát je gaat zeggen. Elk script is een **beat-sheet**: talking
 points + "toon-op-scherm"-cues, geen woord-voor-woord teleprompter (dat klinkt
 robotachtig). Je improviseert de exacte zinnen — het script houdt je op koers.
 
+> **Faceless-first.** Begin zonder camera: scherm + stem. Geen licht/camera-
+> frictie, één variabele (audio). Je gezicht koppel je later toe via bookend-
+> intro's. Zie `00-recording-setup.md` → "Faceless-first".
+
 ## De top-10 (volgorde van opnemen)
 
 Begin met Welcome — die video verkoopt het hele product en oefent je presenteer-
