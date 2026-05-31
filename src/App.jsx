@@ -433,6 +433,7 @@ export default function ClaudeHandbook() {
             moduleNumber={modules.findIndex(m => m.id === activeModule) + 1}
             moduleCategory={modules.find(m => m.id === activeModule)?.category}
             moduleLastUpdated={modules.find(m => m.id === activeModule)?.lastUpdated}
+            moduleVideo={modules.find(m => m.id === activeModule)?.video}
             totalModules={modules.length}
             prevModule={modules[modules.findIndex(m => m.id === activeModule) - 1]}
             nextModule={modules[modules.findIndex(m => m.id === activeModule) + 1]}
@@ -445,7 +446,7 @@ export default function ClaudeHandbook() {
   );
 }
 
-function ModuleContent({ id, theme, completed, onToggleComplete, note, onUpdateNote, glossarySearch, setGlossarySearch, setActiveModule, moduleNumber, moduleCategory, moduleLastUpdated, totalModules, prevModule, nextModule, exerciseProgress, toggleExercise }) {
+function ModuleContent({ id, theme, completed, onToggleComplete, note, onUpdateNote, glossarySearch, setGlossarySearch, setActiveModule, moduleNumber, moduleCategory, moduleLastUpdated, moduleVideo, totalModules, prevModule, nextModule, exerciseProgress, toggleExercise }) {
   resetCounters();
   const content = getModuleContent(id, theme, glossarySearch, setGlossarySearch, setActiveModule, exerciseProgress, toggleExercise);
 
@@ -457,6 +458,7 @@ function ModuleContent({ id, theme, completed, onToggleComplete, note, onUpdateN
       {id !== "welcome" && (
         <ChapterHeader number={moduleNumber} total={totalModules} category={moduleCategory} theme={theme} lastUpdated={moduleLastUpdated} />
       )}
+      {moduleVideo && <VideoEmbed video={moduleVideo} theme={theme} />}
       {content}
 
       {QUIZZES[id] && <Quiz moduleId={id} theme={theme} />}
@@ -669,6 +671,72 @@ const Card = ({ children, theme, label, highlighted = false }) => (
     {children}
   </div>
 );
+
+// ============================================================
+//  VideoEmbed — walkthrough-video bovenaan een module
+//  video = { url, duration, provider } — leeg = niets gerenderd
+//  Ondersteunt: youtube, vimeo, loom, cloudflare-stream, direct mp4
+// ============================================================
+function videoToEmbedSrc(video) {
+  const url = video.url || "";
+  // YouTube
+  let m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]+)/);
+  if (m) return `https://www.youtube-nocookie.com/embed/${m[1]}`;
+  // Vimeo
+  m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (m) return `https://player.vimeo.com/video/${m[1]}`;
+  // Loom
+  m = url.match(/loom\.com\/(?:share|embed)\/([\w-]+)/);
+  if (m) return `https://www.loom.com/embed/${m[1]}`;
+  // Cloudflare Stream (customer-subdomain/<id>/iframe)
+  if (url.includes("cloudflarestream.com")) {
+    return url.includes("/iframe") ? url : url.replace(/\/?$/, "/iframe");
+  }
+  return null; // direct mp4 of onbekend → <video> fallback
+}
+
+function VideoEmbed({ video, theme }) {
+  const [open, setOpen] = useState(false);
+  if (!video || !video.url) return null;
+  const embedSrc = videoToEmbedSrc(video);
+
+  return (
+    <div className={`mb-8 rounded-xl border ${theme.border} ${theme.bgAlt} overflow-hidden print:hidden`}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        className={`w-full flex items-center gap-3 px-4 py-3 text-left ${theme.bgHover} transition`}
+        aria-expanded={open}
+      >
+        <span className={`flex items-center justify-center w-9 h-9 rounded-lg ${theme.accent} text-white shrink-0`}>
+          ▶
+        </span>
+        <span className="flex-1 min-w-0">
+          <span className={`block text-sm font-semibold ${theme.text}`}>Video-walkthrough</span>
+          <span className={`block text-xs ${theme.textSubtle}`}>
+            {video.duration ? `${video.duration} · ` : ""}klik om {open ? "te verbergen" : "te bekijken"}
+          </span>
+        </span>
+        <span className={`text-xs ${theme.textSubtle}`}>{open ? "▲" : "▼"}</span>
+      </button>
+      {open && (
+        <div className="relative w-full bg-black" style={{ aspectRatio: "16 / 9" }}>
+          {embedSrc ? (
+            <iframe
+              src={embedSrc}
+              title="Video-walkthrough"
+              className="absolute inset-0 w-full h-full"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+              allowFullScreen
+            />
+          ) : (
+            <video src={video.url} controls className="absolute inset-0 w-full h-full" />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ============================================================
 //  Quiz-data — per module 3 multiple-choice vragen
