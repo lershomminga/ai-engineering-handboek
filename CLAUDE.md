@@ -2,6 +2,8 @@
 
 Interactief, Nederlandstalig studieboek (single-page React app) waarin alles staat over Claude / AI engineering: fundamenten, prompting, skills, MCP, agents, RAG, automation, frontend/backend, deployment, ecosystem, woordenboek.
 
+> **Geparkeerd / hervatten:** zie `NEXT-STEPS.md` voor de huidige stand en de volgende stap (video-walkthroughs opnemen, faceless-first). Lees dat eerst bij het oppakken van werk.
+
 ## Stack
 
 - Vite 6 + React 18
