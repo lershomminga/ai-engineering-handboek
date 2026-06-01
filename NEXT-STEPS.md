@@ -3,7 +3,20 @@
 > Laatst bijgewerkt: 2026-05-31. Dit bestand is het geheugen tussen sessies.
 > Lees dit eerst bij hervatten.
 
+## Vóór echte launch nog checken (door Lars zelf)
+
+- **Merknaam "Promptmeester" beschikbaarheid** — domein (promptmeester.nl),
+  KvK/handelsnaam, social handles. Lars checkt dit bij echte launch en past de
+  naam evt. aan. De rebrand is reversibel: naam zit in `src/App.jsx` (header +
+  hero), `index.html`, `public/favicon.svg`, `package.json`, `README.md`,
+  `CLAUDE.md`. Eén vind-vervang-pass volstaat voor een nieuwe naam.
+
 ## Waar staan we
+
+Het merk is **Promptmeester** (richting A: eigen woordmerk, Claude = onderwerp).
+Positionering: breed/toegankelijk — "iedereen leert bouwen met AI, vanaf nul,
+geen programmeer-achtergrond nodig". Geen persoonlijke auteursnaam toegevoegd
+(woordmerk-pad gekozen); kan later een "door [naam]"-regel krijgen.
 
 Het hele **Master Expansion Plan is uitgevoerd, gecommit en gepusht** naar
 `origin/main` (`github.com/lershomminga/ai-engineering-handboek`). Stand:
