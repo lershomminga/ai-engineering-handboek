@@ -278,11 +278,11 @@ export default function ClaudeHandbook() {
               <Menu className="w-5 h-5" aria-hidden="true" />
             </button>
             <div className={`w-9 h-9 rounded-lg ${theme.accent} flex items-center justify-center shadow-sm`}>
-              <Sparkles className="w-5 h-5 text-white" />
+              <span className="font-display text-white text-xl font-semibold leading-none select-none">P</span>
             </div>
             <div>
-              <h1 className="font-display text-base font-semibold leading-tight tracking-tight">Claude Engineering <span className="italic-display text-orange-500">Handboek</span></h1>
-              <p className={`text-[11px] font-mono tracking-wider uppercase ${theme.textSubtle}`}>Jouw studieboek · AI engineer</p>
+              <h1 className="font-display text-base font-semibold leading-tight tracking-tight">Prompt<span className="italic-display text-orange-500">meester</span></h1>
+              <p className={`text-[11px] font-mono tracking-wider uppercase ${theme.textSubtle}`}>Leer bouwen met AI · vanaf nul</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -1552,13 +1552,13 @@ function Welcome({ theme, setActiveModule }) {
       <div className="mb-12 relative">
         <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border ${theme.accentBorder} ${theme.accentSoft} mb-6`}>
           <Sparkles className={`w-3 h-3 ${theme.accentText}`} />
-          <span className={`text-[10px] font-mono tracking-[0.2em] uppercase ${theme.accentText} font-semibold`}>Nederlandstalig · AI Engineering</span>
+          <span className={`text-[10px] font-mono tracking-[0.2em] uppercase ${theme.accentText} font-semibold`}>Nederlandstalig · Vanaf nul · Voor iedereen</span>
         </div>
         <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-semibold leading-[1.02] text-balance mb-6">
-          Word een <span className="italic-display text-orange-500">echte</span><br/>AI Engineer.
+          Word <span className="italic-display text-orange-500">meester</span><br/>over AI.
         </h1>
         <p className={`${theme.textMuted} text-lg md:text-xl leading-relaxed max-w-2xl text-pretty mb-8`}>
-          Geen statische cursus — een interactief studieboek waarin alles staat over Claude en het bredere AI-ecosysteem. Van <em>wat is een token</em> tot het bouwen van complete agents die echt werk uit handen nemen.
+          Geen programmeer-achtergrond nodig. Van je <em>eerste prompt</em> tot complete AI-systemen die écht werk uit handen nemen — stap voor stap, in het Nederlands. Of je nu ondernemer, student of gewoon nieuwsgierig bent: hier leer je het van de grond af.
         </p>
         <div className="flex flex-wrap gap-3">
           <button

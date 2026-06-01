@@ -1,6 +1,6 @@
-# Claude Engineering Handboek
+# Promptmeester
 
-Interactief, Nederlandstalig studieboek (single-page React app) waarin alles staat over Claude / AI engineering: fundamenten, prompting, skills, MCP, agents, RAG, automation, frontend/backend, deployment, ecosystem, woordenboek.
+Interactief, Nederlandstalig studieboek (single-page React app) waarmee iedereen leert bouwen met AI — vanaf nul, geen programmeer-achtergrond vereist. Dekt alles over Claude / AI engineering: fundamenten, prompting, skills, MCP, agents, RAG, automation, frontend/backend, deployment, ecosystem, woordenboek. Merknaam: **Promptmeester** (Claude is het onderwerp, niet het merk).
 
 > **Geparkeerd / hervatten:** zie `NEXT-STEPS.md` voor de huidige stand en de volgende stap (video-walkthroughs opnemen, faceless-first). Lees dat eerst bij het oppakken van werk.
 

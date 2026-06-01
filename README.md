@@ -1,8 +1,8 @@
-# Claude Engineering Handboek
+# Promptmeester
 
-Een interactief, Nederlandstalig studieboek over Claude / AI engineering — van *wat is een token* tot het bouwen, evalueren en deployen van productie-agents. Single-page React-app, geen backend nodig.
+**Leer bouwen met AI — in het Nederlands, vanaf nul.** Het interactieve handboek waarmee iedereen leert werken met Claude en AI: geen programmeer-achtergrond nodig. Van je eerste prompt tot complete AI-systemen die echt werk uit handen nemen. Single-page React-app, geen backend nodig.
 
-![Editie 2026](https://img.shields.io/badge/editie-2026-orange) ![45 modules](https://img.shields.io/badge/modules-45-orange) ![Nederlandstalig](https://img.shields.io/badge/taal-NL-orange)
+![Vanaf nul](https://img.shields.io/badge/niveau-vanaf%20nul-orange) ![45 modules](https://img.shields.io/badge/modules-45-orange) ![Nederlandstalig](https://img.shields.io/badge/taal-NL-orange)
 
 ## Wat zit erin
 
@@ -79,4 +79,4 @@ Gratis te hosten op Vercel, Netlify, Cloudflare Pages of GitHub Pages. Zie [DEPL
 
 ---
 
-*Gemaakt als zelfstudie-naslagwerk voor wie een echte AI engineer wil worden. Nederlandstalig, omdat dat materiaal op dit niveau nergens anders bestaat.*
+*Promptmeester — gemaakt zodat iedereen leert bouwen met AI, niet alleen programmeurs. Nederlandstalig, omdat materiaal op dit niveau in het Nederlands nergens anders bestaat. Begin bij nul, eindig met systemen die echt werk uit handen nemen.*
