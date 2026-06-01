@@ -1552,7 +1552,7 @@ function Welcome({ theme, setActiveModule }) {
       <div className="mb-12 relative">
         <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border ${theme.accentBorder} ${theme.accentSoft} mb-6`}>
           <Sparkles className={`w-3 h-3 ${theme.accentText}`} />
-          <span className={`text-[10px] font-mono tracking-[0.2em] uppercase ${theme.accentText} font-semibold`}>Editie 2026 · Nederlandstalig</span>
+          <span className={`text-[10px] font-mono tracking-[0.2em] uppercase ${theme.accentText} font-semibold`}>Nederlandstalig · AI Engineering</span>
         </div>
         <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-semibold leading-[1.02] text-balance mb-6">
           Word een <span className="italic-display text-orange-500">echte</span><br/>AI Engineer.
