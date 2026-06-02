@@ -935,6 +935,7 @@ function Quiz({ moduleId, theme }) {
   const [open, setOpen] = useState(false);
   const [idx, setIdx] = useState(0);
   const [chosen, setChosen] = useState(null);
+  const [confidence, setConfidence] = useState(null); // "laag" | "midden" | "hoog"
   const [answers, setAnswers] = useState([]);
   const [scores, setScores] = useState({});
 
@@ -949,16 +950,19 @@ function Quiz({ moduleId, theme }) {
 
   const moduleScore = scores[moduleId];
   const q = questions[idx];
-  const answered = chosen !== null;
-  const correct = answered && chosen === q.correct;
+  const selected = chosen !== null;        // antwoord gekozen
+  const revealed = confidence !== null;    // pas onthullen ná zekerheid
+  const correct = revealed && chosen === q.correct;
 
-  const restart = () => { setIdx(0); setChosen(null); setAnswers([]); };
+  const restart = () => { setIdx(0); setChosen(null); setConfidence(null); setAnswers([]); };
   const next = () => {
-    const nextAnswers = [...answers, { chosen, correct }];
+    const wasCorrect = chosen === q.correct;
+    const nextAnswers = [...answers, { chosen, correct: wasCorrect, confidence }];
     if (idx + 1 < questions.length) {
       setAnswers(nextAnswers);
       setIdx(idx + 1);
       setChosen(null);
+      setConfidence(null);
     } else {
       // klaar — bewaar score
       const finalCorrect = nextAnswers.filter(a => a.correct).length;
@@ -996,10 +1000,51 @@ function Quiz({ moduleId, theme }) {
     const numCorrect = answers.filter(a => a.correct).length;
     const pct = Math.round((numCorrect / questions.length) * 100);
     const verdict = pct === 100 ? "🎯 Perfect!" : pct >= 67 ? "💪 Goed bezig" : "📚 Nog even oefenen";
+
+    // Calibratie: per zekerheids-bucket de accuratesse
+    const buckets = ["hoog", "midden", "laag"];
+    const calib = buckets.map(b => {
+      const inB = answers.filter(a => a.confidence === b);
+      const corr = inB.filter(a => a.correct).length;
+      return { b, n: inB.length, corr, acc: inB.length ? Math.round((corr / inB.length) * 100) : null };
+    }).filter(c => c.n > 0);
+
+    // Overmoed-/onderschatting-signaal
+    const hoog = calib.find(c => c.b === "hoog");
+    const laag = calib.find(c => c.b === "laag");
+    let insight = null;
+    if (hoog && hoog.acc < 70) insight = { kind: "warn", text: `Je was zéker op ${hoog.n} ${hoog.n === 1 ? "vraag" : "vragen"}, maar had er maar ${hoog.acc}% goed — let op overmoed. Die onderwerpen ken je minder dan je denkt.` };
+    else if (laag && laag.acc >= 80) insight = { kind: "tip", text: `Je twijfelde op ${laag.n} ${laag.n === 1 ? "vraag" : "vragen"} maar had er ${laag.acc}% goed — je weet meer dan je jezelf toevertrouwt.` };
+    else if (hoog && hoog.acc >= 80) insight = { kind: "tip", text: `Goed gekalibreerd: waar je zeker was, had je het ook goed (${hoog.acc}%).` };
+
+    const bucketLabel = { hoog: "Zeker", midden: "Twijfel", laag: "Gok" };
+    const bucketColor = { hoog: "text-emerald-500", midden: "text-amber-500", laag: "text-red-500" };
+
     return (
       <div className={`mt-8 p-6 rounded-xl border-2 ${theme.accentBorder} ${theme.accentSoft} print:hidden`}>
         <h3 className="font-display text-2xl font-semibold mb-2">{verdict}</h3>
         <p className={`text-sm ${theme.textMuted} mb-4`}>Je hebt <strong className={theme.text}>{numCorrect}/{questions.length}</strong> correct ({pct}%).</p>
+
+        {calib.length > 0 && (
+          <div className={`mb-4 p-3 rounded-lg border ${theme.border} ${theme.bgCard}`}>
+            <div className={`text-[10px] font-mono uppercase tracking-wider ${theme.textSubtle} mb-2`}>Zelfvertrouwen vs. werkelijkheid</div>
+            <div className="space-y-1.5">
+              {calib.map(c => (
+                <div key={c.b} className="flex items-center gap-3 text-sm">
+                  <span className={`w-16 font-semibold ${bucketColor[c.b]}`}>{bucketLabel[c.b]}</span>
+                  <span className={`flex-1 ${theme.textMuted}`}>{c.corr}/{c.n} goed</span>
+                  <span className={`font-mono tabular-nums ${theme.text}`}>{c.acc}%</span>
+                </div>
+              ))}
+            </div>
+            {insight && (
+              <p className={`mt-3 text-sm ${insight.kind === "warn" ? "text-amber-600" : theme.textMuted}`}>
+                {insight.kind === "warn" ? "⚠ " : "✓ "}{insight.text}
+              </p>
+            )}
+          </div>
+        )}
+
         <div className="flex gap-2">
           <button onClick={() => { restart(); }} className={`px-4 py-2 rounded-lg ${theme.accent} text-white text-sm font-semibold`}>Opnieuw</button>
           <button onClick={() => setOpen(false)} className={`px-4 py-2 rounded-lg border ${theme.border} ${theme.bgCard} ${theme.textMuted} text-sm`}>Sluit</button>
@@ -1019,13 +1064,13 @@ function Quiz({ moduleId, theme }) {
         {q.options.map((opt, i) => {
           const isCorrect = i === q.correct;
           const isChosen = chosen === i;
-          const showCorrect = answered && isCorrect;
-          const showWrong = answered && isChosen && !isCorrect;
+          const showCorrect = revealed && isCorrect;
+          const showWrong = revealed && isChosen && !isCorrect;
           return (
             <button
               key={i}
-              onClick={() => !answered && setChosen(i)}
-              disabled={answered}
+              onClick={() => !revealed && setChosen(i)}
+              disabled={revealed}
               className={`w-full text-left p-3 rounded-lg border text-sm transition ${
                 showCorrect ? "bg-emerald-500/15 border-emerald-500/50 text-emerald-400"
                 : showWrong ? "bg-red-500/15 border-red-500/50 text-red-400"
@@ -1038,14 +1083,37 @@ function Quiz({ moduleId, theme }) {
           );
         })}
       </div>
-      {answered && (
+
+      {/* Confidence-picker: ná antwoord, vóór onthullen */}
+      {selected && !revealed && (
+        <div className="mt-4">
+          <div className={`text-sm ${theme.textMuted} mb-2`}>Hoe zeker ben je van dit antwoord?</div>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { v: "laag", label: "Gok", emoji: "🤷" },
+              { v: "midden", label: "Twijfel", emoji: "🤔" },
+              { v: "hoog", label: "Zeker", emoji: "💪" },
+            ].map(c => (
+              <button
+                key={c.v}
+                onClick={() => setConfidence(c.v)}
+                className={`p-2.5 rounded-lg border text-sm font-medium transition ${theme.border} ${theme.bgCard} ${theme.textMuted} hover:border-orange-500 hover:${theme.text}`}
+              >
+                {c.emoji} {c.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {revealed && (
         <div className={`mt-4 p-3 rounded-lg ${correct ? "bg-emerald-500/10 border border-emerald-500/30" : "bg-amber-500/10 border border-amber-500/30"}`}>
           <p className={`text-sm ${theme.textMuted}`}>
             <strong className={theme.text}>{correct ? "Klopt." : "Niet helemaal."}</strong> {q.explanation}
           </p>
         </div>
       )}
-      {answered && (
+      {revealed && (
         <div className="mt-4 flex justify-end">
           <button onClick={next} className={`px-4 py-2 rounded-lg ${theme.accent} text-white text-sm font-semibold`}>
             {idx + 1 < questions.length ? "Volgende" : "Toon score"}
