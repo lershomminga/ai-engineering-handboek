@@ -766,6 +766,180 @@ function VideoEmbed({ video, theme }) {
 }
 
 // ============================================================
+//  Interactieve widgets — "manipuleerbaar leren"
+// ============================================================
+
+// Widget-wrapper met label + uitleg
+function Widget({ theme, label, children, hint }) {
+  return (
+    <div className={`my-6 rounded-xl border ${theme.accentBorder} ${theme.bgCard} overflow-hidden print:hidden`}>
+      <div className={`px-4 py-2 ${theme.accentSoft} flex items-center gap-2`}>
+        <Settings className={`w-3.5 h-3.5 ${theme.accentText}`} />
+        <span className={`text-[10px] font-mono tracking-[0.2em] uppercase ${theme.accentText} font-semibold`}>Interactief · {label}</span>
+      </div>
+      <div className="p-4">
+        {children}
+        {hint && <p className={`text-xs ${theme.textSubtle} mt-3 italic`}>{hint}</p>}
+      </div>
+    </div>
+  );
+}
+
+// 1. Live tokenizer — benadering van BPE. Toont token-split + telling NL vs EN.
+//    (Heuristiek; echte tokenizer wijkt af, maar de les — NL kost meer tokens — klopt.)
+function TokenizerWidget({ theme }) {
+  const [text, setText] = useState("De Anthropic API biedt prompt caching om kosten te verminderen.");
+  // Heuristische tokenizer: split op woordgrenzen + subword voor lange woorden
+  const tokens = (() => {
+    if (!text.trim()) return [];
+    const out = [];
+    const parts = text.match(/\s+|[^\s]+/g) || [];
+    for (const p of parts) {
+      if (/^\s+$/.test(p)) { continue; } // spaties tellen mee in vorig token (BPE)
+      // lange woorden splitsen in ~4-char brokken (subword-benadering)
+      if (p.length <= 4) out.push(p);
+      else {
+        for (let i = 0; i < p.length; i += 4) out.push(p.slice(i, i + 4));
+      }
+    }
+    return out;
+  })();
+  const chars = text.length;
+  const ratio = tokens.length ? (chars / tokens.length).toFixed(1) : "0";
+  const colors = ["bg-orange-500/20", "bg-sky-500/20", "bg-emerald-500/20", "bg-purple-500/20", "bg-amber-500/20"];
+
+  return (
+    <Widget theme={theme} label="Tokenizer" hint="Benadering van BPE — de échte tokenizer wijkt iets af, maar de les klopt: Nederlands kost ~1,3-1,8× meer tokens per betekenis dan Engels.">
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        rows={2}
+        className={`w-full p-2 rounded-lg text-sm ${theme.input} border focus:outline-none focus:border-orange-500 mb-3`}
+        placeholder="Typ hier tekst..."
+      />
+      <div className="flex flex-wrap gap-1 mb-3">
+        {tokens.map((t, i) => (
+          <span key={i} className={`px-1.5 py-0.5 rounded text-xs font-mono ${colors[i % colors.length]} ${theme.text}`}>{t}</span>
+        ))}
+      </div>
+      <div className="flex gap-4 text-sm">
+        <div><span className={`font-mono font-semibold ${theme.accentText}`}>{tokens.length}</span> <span className={theme.textSubtle}>tokens</span></div>
+        <div><span className={`font-mono font-semibold ${theme.text}`}>{chars}</span> <span className={theme.textSubtle}>chars</span></div>
+        <div><span className={`font-mono font-semibold ${theme.text}`}>{ratio}</span> <span className={theme.textSubtle}>chars/token</span></div>
+      </div>
+    </Widget>
+  );
+}
+
+// 2. Temperature-visualizer — toont hoe de token-kansverdeling verandert.
+function TemperatureWidget({ theme }) {
+  const [temp, setTemp] = useState(0.7);
+  // Voorbeeld-logits voor "De kat zit op de ___"
+  const base = [
+    { tok: "mat", logit: 3.2 },
+    { tok: "bank", logit: 2.1 },
+    { tok: "stoel", logit: 1.6 },
+    { tok: "tafel", logit: 1.0 },
+    { tok: "maan", logit: -0.4 },
+  ];
+  const t = Math.max(0.01, temp);
+  const scaled = base.map(b => Math.exp(b.logit / t));
+  const sum = scaled.reduce((a, b) => a + b, 0);
+  const probs = base.map((b, i) => ({ ...b, p: scaled[i] / sum }));
+
+  return (
+    <Widget theme={theme} label="Temperature" hint="Lager = scherper/deterministisch (T=0 kiest altijd 'mat'). Hoger = platter/creatiever (rare keuzes worden waarschijnlijker). Top-token blijft 'mat' tot de verdeling vlak genoeg is.">
+      <div className="flex items-center gap-3 mb-4">
+        <span className={`text-sm font-mono ${theme.textSubtle}`}>T =</span>
+        <input
+          type="range" min="0" max="2" step="0.05" value={temp}
+          onChange={(e) => setTemp(parseFloat(e.target.value))}
+          className="flex-1 accent-orange-500"
+        />
+        <span className={`text-sm font-mono font-semibold ${theme.accentText} w-10 text-right`}>{temp.toFixed(2)}</span>
+      </div>
+      <div className={`text-xs ${theme.textSubtle} mb-2 font-mono`}>"De kat zit op de ___"</div>
+      <div className="space-y-1.5">
+        {probs.map(b => (
+          <div key={b.tok} className="flex items-center gap-2">
+            <span className={`w-12 text-sm font-mono ${theme.text}`}>{b.tok}</span>
+            <div className={`flex-1 h-4 ${theme.bgSoft} rounded overflow-hidden`}>
+              <div className={`h-full ${theme.accent} transition-all`} style={{ width: `${b.p * 100}%` }} />
+            </div>
+            <span className={`w-12 text-right text-xs font-mono ${theme.textSubtle}`}>{(b.p * 100).toFixed(0)}%</span>
+          </div>
+        ))}
+      </div>
+    </Widget>
+  );
+}
+
+// 3. Kosten-calculator — maandrekening obv model + volume + caching/routing.
+const COST_MODELS = {
+  "claude-haiku-4-5": { in: 0.80, out: 4.00, label: "Haiku 4.5" },
+  "claude-sonnet-4-6": { in: 3.00, out: 15.00, label: "Sonnet 4.6" },
+  "claude-opus-4-7": { in: 15.00, out: 75.00, label: "Opus 4.7" },
+};
+function CostWidget({ theme }) {
+  const [model, setModel] = useState("claude-sonnet-4-6");
+  const [reqPerDay, setReqPerDay] = useState(1000);
+  const [inTok, setInTok] = useState(2000);
+  const [outTok, setOutTok] = useState(500);
+  const [cacheHit, setCacheHit] = useState(0);   // % cached input
+  const [batch, setBatch] = useState(false);
+
+  const m = COST_MODELS[model];
+  const perReqIn = (inTok * (1 - cacheHit / 100) * m.in + inTok * (cacheHit / 100) * m.in * 0.1) / 1e6;
+  const perReqOut = (outTok * m.out) / 1e6;
+  let perReq = perReqIn + perReqOut;
+  if (batch) perReq *= 0.5;
+  const perDay = perReq * reqPerDay;
+  const perMonth = perDay * 30;
+
+  const fmt = n => n < 1 ? `$${n.toFixed(4)}` : `$${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+
+  return (
+    <Widget theme={theme} label="Kosten-calculator" hint="Stacking werkt multiplicatief: cache-hit verlaagt input naar 10%, Batch API halveert alles. Bij hoge cache-hit + Haiku-routing zak je vaak 90%+ onder naïef Sonnet-everywhere.">
+      <div className="grid sm:grid-cols-2 gap-3 mb-4">
+        <label className="text-sm">
+          <span className={`block ${theme.textSubtle} mb-1`}>Model</span>
+          <select value={model} onChange={(e) => setModel(e.target.value)} className={`w-full p-2 rounded ${theme.input} border text-sm`}>
+            {Object.entries(COST_MODELS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+          </select>
+        </label>
+        <label className="text-sm">
+          <span className={`block ${theme.textSubtle} mb-1`}>Requests / dag</span>
+          <input type="number" value={reqPerDay} onChange={(e) => setReqPerDay(Math.max(0, +e.target.value))} className={`w-full p-2 rounded ${theme.input} border text-sm`} />
+        </label>
+        <label className="text-sm">
+          <span className={`block ${theme.textSubtle} mb-1`}>Input tokens / req</span>
+          <input type="number" value={inTok} onChange={(e) => setInTok(Math.max(0, +e.target.value))} className={`w-full p-2 rounded ${theme.input} border text-sm`} />
+        </label>
+        <label className="text-sm">
+          <span className={`block ${theme.textSubtle} mb-1`}>Output tokens / req</span>
+          <input type="number" value={outTok} onChange={(e) => setOutTok(Math.max(0, +e.target.value))} className={`w-full p-2 rounded ${theme.input} border text-sm`} />
+        </label>
+      </div>
+      <div className="flex items-center gap-4 mb-4 flex-wrap">
+        <label className="text-sm flex-1 min-w-[180px]">
+          <span className={`block ${theme.textSubtle} mb-1`}>Cache-hit: {cacheHit}%</span>
+          <input type="range" min="0" max="100" step="5" value={cacheHit} onChange={(e) => setCacheHit(+e.target.value)} className="w-full accent-orange-500" />
+        </label>
+        <label className="text-sm flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" checked={batch} onChange={(e) => setBatch(e.target.checked)} className="accent-orange-500" />
+          <span className={theme.textMuted}>Batch API (−50%)</span>
+        </label>
+      </div>
+      <div className={`grid grid-cols-3 gap-2 p-3 rounded-lg ${theme.bgSoft}`}>
+        <div><div className={`text-xs ${theme.textSubtle}`}>per request</div><div className={`font-mono font-semibold ${theme.text}`}>{fmt(perReq)}</div></div>
+        <div><div className={`text-xs ${theme.textSubtle}`}>per dag</div><div className={`font-mono font-semibold ${theme.text}`}>{fmt(perDay)}</div></div>
+        <div><div className={`text-xs ${theme.textSubtle}`}>per maand</div><div className={`font-mono font-semibold text-xl ${theme.accentText}`}>{fmt(perMonth)}</div></div>
+      </div>
+    </Widget>
+  );
+}
+
+// ============================================================
 //  Quiz-data — per module 3 multiple-choice vragen
 // ============================================================
 const QUIZZES = {
@@ -3075,6 +3249,8 @@ Chain-of-thought werkt:       vanaf ~62B (PaLM)`}</Pre>
       <P theme={theme}>
         De API-parameters die je elke dag gebruikt, maar zelden begrijpt. Volgorde in de pipeline is: <strong className={theme.text}>logits → temperature → top-k → top-p → min-p → sample</strong>.
       </P>
+      <P theme={theme}>Speel met temperature en zie de kansverdeling van de volgende token live veranderen:</P>
+      <TemperatureWidget theme={theme} />
       <Pre theme={theme} label="Wiskunde">{`Stap 1 — Logits (model-output)
   voor elke vocab-token een score: [3.2, 1.8, -0.5, 0.9, ...]
 
@@ -3733,6 +3909,8 @@ function TokensContext({ theme }) {
       <P theme={theme}>
         Dit hoofdstuk gaat van het basisidee (wat is een token?) door drie lagen heen: <strong className={theme.text}>economisch</strong> (prijs, caching, batch), <strong className={theme.text}>cognitief</strong> (context window, lost-in-the-middle, context rot) en <strong className={theme.text}>technisch</strong> (KV-cache, RoPE/YaRN, attention sinks). Aan het einde weet je niet alleen <em>dat</em> een 1M-window niet automatisch beter is — je weet ook precies <em>waarom</em>, en hoe je dat in je architectuur compenseert.
       </P>
+      <P theme={theme}>Probeer het zelf: typ een zin en zie hem in tokens uiteenvallen. Vergelijk Nederlands met Engels.</P>
+      <TokenizerWidget theme={theme} />
       <Callout kind="warn">
         <p className={`text-sm ${theme.textMuted}`}>
           <strong className={theme.text}>Waarschuwing vooraf:</strong> alle prijzen, default-TTLs en model-specs in dit hoofdstuk zijn momentopnames van mei 2026. Anthropic verandert deze parameters geregeld zonder veel ruchtbaarheid (de TTL-flip van 6 maart 2026 is een berucht voorbeeld — default ging stilletjes van 1 uur naar 5 minuten). Check voor productie altijd de live docs op <InlineCode theme={theme}>platform.claude.com/docs/en/build-with-claude/prompt-caching</InlineCode>.
@@ -15495,6 +15673,8 @@ function CostOpt({ theme }) {
       <P theme={theme}>
         Een AI-app die werkt is leuk; een AI-app die werkt én betaalbaar blijft is een product. Veel teams ontdekken pas in productie hoe snel tokens optellen — een populaire chat kan zo €5.000+/mo kosten zonder dat iemand het ziet aankomen. Goed nieuws: er zijn 7 grote knoppen waar je aan kunt draaien, elk met een typische besparing van 20-90%.
       </P>
+      <P theme={theme}>Reken je eigen scenario door — model, volume, caching en Batch API in één:</P>
+      <CostWidget theme={theme} />
 
       <H2>De zeven hefbomen — overzicht</H2>
       <P theme={theme}>
