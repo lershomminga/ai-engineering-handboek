@@ -21,12 +21,18 @@ export default function ClaudeHandbook() {
   const [sandboxOpen, setSandboxOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [srsDue, setSrsDue] = useState(0);
+  const [srsState, setSrsState] = useState({});
+  const [quizScores, setQuizScores] = useState({});
   const [streak, setStreak] = useState({ count: 0, lastDate: null });
 
-  // Bereken aantal te-herhalen kaarten bij mount en na elke review
-  useEffect(() => {
-    setSrsDue(srsDueCount(srsLoad()));
-  }, []);
+  // Ververs SRS + quizScores (voor mastery + due-count) bij mount en navigatie
+  const refreshLearningState = () => {
+    const srs = srsLoad();
+    setSrsState(srs);
+    setSrsDue(srsDueCount(srs));
+    try { setQuizScores(JSON.parse(localStorage.getItem("quizScores") || "{}")); } catch (e) {}
+  };
+  useEffect(() => { refreshLearningState(); }, []);
 
   // Load from storage
   useEffect(() => {
@@ -76,6 +82,7 @@ export default function ClaudeHandbook() {
       window.history.replaceState(null, "", target);
     }
     window.scrollTo(0, 0);
+    refreshLearningState(); // mastery + due-count bijwerken na quiz/review
   }, [activeModule]);
 
   // Cmd+K command palette
@@ -219,6 +226,16 @@ export default function ClaudeHandbook() {
 
   const completedCount = Object.values(completed).filter(Boolean).length;
   const progress = Math.round((completedCount / modules.length) * 100);
+
+  // Mastery (diepte): som van bereikte niveaus / som van max-niveaus
+  const masteryPct = (() => {
+    let got = 0, max = 0;
+    for (const m of modules) {
+      const { level, max: mx } = moduleMastery(m.id, completed, quizScores, srsState);
+      got += level; max += mx;
+    }
+    return max ? Math.round((got / max) * 100) : 0;
+  })();
 
   const themes = {
     dark: {
@@ -394,7 +411,7 @@ export default function ClaudeHandbook() {
             </div>
           )}
           <div className="p-5">
-            <div className="relative mb-5">
+            <div className="relative mb-4">
               <Search className={`absolute left-3 top-2.5 w-4 h-4 ${theme.textSubtle}`} />
               <input
                 type="text"
@@ -403,6 +420,22 @@ export default function ClaudeHandbook() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className={`w-full pl-9 pr-3 py-2 rounded-lg text-sm ${theme.input} border focus:outline-none focus:border-orange-500`}
               />
+            </div>
+
+            {/* Beheersing (mastery) — diepte naast 'gelezen' */}
+            <div className={`mb-5 p-3 rounded-lg border ${theme.borderSoft} ${theme.bgSoft}`}>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className={`text-[10px] font-mono uppercase tracking-wider ${theme.textMuted}`}>Beheersing</span>
+                <span className={`text-[11px] font-mono font-semibold ${theme.accentText} tabular-nums`}>{masteryPct}%</span>
+              </div>
+              <div className={`w-full h-1 ${theme.bgAlt} rounded-full overflow-hidden mb-2`}>
+                <div className={`h-full ${theme.accent} transition-all`} style={{ width: `${masteryPct}%` }} />
+              </div>
+              <div className={`flex items-center gap-2.5 text-[9px] font-mono ${theme.textSubtle}`}>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />gelezen</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-sky-500 inline-block" />getoetst</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />beheerst</span>
+              </div>
             </div>
 
             {categories.map((cat, catIdx) => {
@@ -420,12 +453,17 @@ export default function ClaudeHandbook() {
                       const Icon = m.icon;
                       const isActive = activeModule === m.id;
                       const isDone = completed[m.id];
+                      const mastery = moduleMastery(m.id, completed, quizScores, srsState);
+                      const masteryDot = mastery.level === 0 ? null
+                        : mastery.level >= mastery.max ? { c: "bg-emerald-500", t: "beheerst" }
+                        : mastery.level === 2 ? { c: "bg-sky-500", t: "getoetst" }
+                        : { c: "bg-amber-500", t: "gelezen" };
                       return (
                         <li key={m.id}>
                           <button
                             onClick={() => { setActiveModule(m.id); setSidebarOpen(false); }}
-                            title={m.title + (isDone ? " (voltooid)" : "")}
-                            aria-label={`Module ${moduleNum}: ${m.title}${isDone ? " — voltooid" : ""}`}
+                            title={m.title + (masteryDot ? ` — ${masteryDot.t}` : "")}
+                            aria-label={`Module ${moduleNum}: ${m.title}${masteryDot ? ` — ${masteryDot.t}` : ""}`}
                             aria-current={isActive ? "page" : undefined}
                             className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-left transition group ${
                               isActive ? `${theme.accent} text-white shadow-sm` : `${theme.bgHover} ${theme.textMuted}`
@@ -434,7 +472,7 @@ export default function ClaudeHandbook() {
                             <span className={`text-[10px] font-mono tabular-nums shrink-0 ${isActive ? "text-white/70" : theme.textSubtle}`}>{String(moduleNum).padStart(2, "0")}</span>
                             <Icon className="w-4 h-4 flex-shrink-0 opacity-80" aria-hidden="true" />
                             <span className="flex-1 truncate">{m.title}</span>
-                            {isDone && <CheckCircle2 className={`w-3.5 h-3.5 ${isActive ? "text-white" : "text-emerald-500"}`} aria-hidden="true" />}
+                            {masteryDot && <span className={`w-2 h-2 rounded-full shrink-0 ${isActive ? "bg-white" : masteryDot.c}`} aria-hidden="true" />}
                           </button>
                         </li>
                       );
@@ -1356,6 +1394,32 @@ function srsSeedModule(moduleId, correctness) {
   });
   srsSave(srs);
   return srs;
+}
+
+// ============================================================
+//  Mastery — diepte-metric per module (naast 'gelezen')
+//  0 niet begonnen · 1 gelezen · 2 getoetst (quiz>=67%) · 3 beheerst (+SRS-retentie)
+//  Modules zonder quiz: max = 1 (gelezen is het diepste meetbare niveau)
+// ============================================================
+function moduleMastery(id, completed, quizScores, srs) {
+  const hasQuiz = !!QUIZZES[id];
+  const max = hasQuiz ? 3 : 1;
+  const read = !!(completed && completed[id]);
+  let quizPass = false, retained = false;
+  if (hasQuiz && quizScores && quizScores[id] && quizScores[id].total) {
+    quizPass = (quizScores[id].correct / quizScores[id].total) >= 0.67;
+  }
+  if (hasQuiz && srs) {
+    const cardIds = QUIZZES[id].map((_, i) => `${id}#${i}`);
+    const seeded = cardIds.filter(c => srs[c]);
+    const strong = seeded.filter(c => srs[c].reps >= 2);
+    retained = seeded.length > 0 && strong.length >= Math.ceil(seeded.length / 2);
+  }
+  let level = 0;
+  if (read) level = 1;
+  if (quizPass) level = Math.max(level, 2);
+  if (quizPass && retained) level = 3;
+  return { level, max, hasQuiz };
 }
 function srsGrade(srs, cardId, correct) {
   const today = srsToday();

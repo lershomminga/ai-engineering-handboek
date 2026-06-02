@@ -3,6 +3,30 @@
 Alle noemenswaardige wijzigingen aan het Claude Engineering Handboek.
 Formaat losjes gebaseerd op [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.1.0] — 2026-06-02 — "Educatieve diepte-laag + Promptmeester rebrand"
+
+### Rebrand
+- Merknaam **Promptmeester** (eigen woordmerk, Claude = onderwerp)
+- Brede positionering: "iedereen leert bouwen met AI, vanaf nul" — geen
+  programmeer-achtergrond vereist
+- Fraunces "P" lettermark, hero "Word meester over AI", SEO herschreven
+
+### Toegevoegd — leermechanismen (op basis van leerwetenschap)
+- **Spaced repetition (SRS)** — SM-2-lite over quizvragen; kaarten geseed na
+  quiz-voltooiing, herhaal-badge in header, review-overlay
+- **Confidence-calibratie** — quiz vraagt zekerheid vóór onthulling; eindscherm
+  toont zelfvertrouwen-vs-werkelijkheid + overmoed/onderschatting-insight
+- **Interactieve widgets** — live tokenizer (token-tax NL/EN), temperature-
+  visualizer (kansverdeling), kosten-calculator (model+volume+cache+batch)
+- **Mastery-voortgang** — tweede metric "Beheersing" naast "Voortgang":
+  gelezen → getoetst → beheerst, met per-module gekleurde dots in de sidebar
+
+### Bugfix
+- `useRef` ontbrak in React-import (gebruikt in SmoothText e.a.) — zou bij
+  render crashen; toegevoegd
+- Video-embed-infrastructuur (`VideoEmbed`) + 10 faceless-first opname-scripts
+- Jaartal losgemaakt van merk-badge
+
 ## [2.0.0] — 2026-05-31 — "Master Expansion Plan"
 
 De grootste uitbreiding tot nu toe. 8 parallelle deep-research agents brachten
