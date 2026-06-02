@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Search, BookOpen, CheckCircle2, Circle, ChevronRight, ChevronLeft, Sparkles, Code, Workflow, Bot, Zap, BookMarked, Layers, Cpu, Globe, Settings, FileText, Wrench, Brain, Target, Rocket, Database, Lock, X, Menu, Sun, Moon, Coffee, Award, TrendingUp, Copy, Check, Download, Upload, Flame, Command, MessageSquare, Eye, EyeOff, Mic, Network, Activity, Shield, GitBranch, Boxes } from "lucide-react";
 
 export default function ClaudeHandbook() {
@@ -19,7 +19,14 @@ export default function ClaudeHandbook() {
   const [glossarySearch, setGlossarySearch] = useState("");
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [sandboxOpen, setSandboxOpen] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [srsDue, setSrsDue] = useState(0);
   const [streak, setStreak] = useState({ count: 0, lastDate: null });
+
+  // Bereken aantal te-herhalen kaarten bij mount en na elke review
+  useEffect(() => {
+    setSrsDue(srsDueCount(srsLoad()));
+  }, []);
 
   // Load from storage
   useEffect(() => {
@@ -124,12 +131,15 @@ export default function ClaudeHandbook() {
   };
 
   const exportProgress = () => {
-    const data = { completed, notes, exerciseProgress, themeMode, streak, exportedAt: new Date().toISOString() };
+    let srs = {}, quizScores = {};
+    try { srs = JSON.parse(localStorage.getItem("srs") || "{}"); } catch (e) {}
+    try { quizScores = JSON.parse(localStorage.getItem("quizScores") || "{}"); } catch (e) {}
+    const data = { completed, notes, exerciseProgress, themeMode, streak, srs, quizScores, exportedAt: new Date().toISOString() };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `claude-handbook-progress-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `promptmeester-progress-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -144,6 +154,8 @@ export default function ClaudeHandbook() {
         if (data.exerciseProgress) { setExerciseProgress(data.exerciseProgress); localStorage.setItem("exerciseProgress", JSON.stringify(data.exerciseProgress)); }
         if (data.themeMode) { setThemeMode(data.themeMode); localStorage.setItem("themeMode", JSON.stringify(data.themeMode)); }
         if (data.streak) { setStreak(data.streak); localStorage.setItem("streak", JSON.stringify(data.streak)); }
+        if (data.srs) { localStorage.setItem("srs", JSON.stringify(data.srs)); setSrsDue(srsDueCount(data.srs)); }
+        if (data.quizScores) { localStorage.setItem("quizScores", JSON.stringify(data.quizScores)); }
         alert("Voortgang geïmporteerd!");
       } catch (err) {
         alert("Kon bestand niet lezen: " + err.message);
@@ -300,6 +312,15 @@ export default function ClaudeHandbook() {
               <div className="text-[11px] font-mono font-semibold tabular-nums">{progress}%</div>
             </div>
             <button
+              onClick={() => setReviewOpen(true)}
+              className={`inline-flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-mono border transition-colors ${srsDue > 0 ? `${theme.accent} text-white border-transparent` : `${theme.bgHover} ${theme.textMuted} ${theme.borderSoft}`}`}
+              title={srsDue > 0 ? `${srsDue} kaarten te herhalen` : "Herhaling — niks openstaand"}
+              aria-label="Open herhaling (spaced repetition)"
+            >
+              <Flame className="w-3 h-3" />
+              <span className="font-semibold tabular-nums">{srsDue}</span>
+            </button>
+            <button
               onClick={() => setPaletteOpen(true)}
               className={`hidden md:inline-flex items-center gap-1.5 px-2 py-1.5 rounded-lg ${theme.bgHover} ${theme.textMuted} text-[11px] font-mono border ${theme.borderSoft} transition-colors`}
               title="Open command palette (Cmd/Ctrl+K)"
@@ -347,6 +368,12 @@ export default function ClaudeHandbook() {
         theme={theme}
         currentModuleId={activeModule}
         currentModuleTitle={modules.find(m => m.id === activeModule)?.title}
+      />
+
+      <ReviewSession
+        open={reviewOpen}
+        onClose={(newDue) => { setReviewOpen(false); if (typeof newDue === "number") setSrsDue(newDue); }}
+        theme={theme}
       />
 
       {/* Floating AI-Tutor button */}
@@ -939,6 +966,8 @@ function Quiz({ moduleId, theme }) {
       const merged = { ...scores, [moduleId]: newScore };
       setScores(merged);
       try { localStorage.setItem("quizScores", JSON.stringify(merged)); } catch (e) {}
+      // Seed deze module in spaced-repetition (kaarten worden vanaf morgen herhaald)
+      try { srsSeedModule(moduleId, nextAnswers.map(a => a.correct)); } catch (e) {}
       setAnswers(nextAnswers);
       setIdx(idx + 1); // toon eindscherm via idx === questions.length
     }
@@ -1023,6 +1052,193 @@ function Quiz({ moduleId, theme }) {
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+// ============================================================
+//  Spaced Repetition (SRS) — SM-2-lite over quizvragen
+//  State in localStorage "srs": { [cardId]: {ease,interval,due,reps,lapses} }
+//  cardId = `${moduleId}#${index}`
+// ============================================================
+function srsToday() {
+  return new Date().toISOString().slice(0, 10);
+}
+function srsAddDays(n) {
+  const d = new Date();
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+function srsAllCards() {
+  // Flatten alle quizvragen tot kaarten
+  const cards = [];
+  for (const moduleId of Object.keys(QUIZZES)) {
+    QUIZZES[moduleId].forEach((qz, i) => {
+      cards.push({ id: `${moduleId}#${i}`, moduleId, ...qz });
+    });
+  }
+  return cards;
+}
+function srsLoad() {
+  try {
+    const s = localStorage.getItem("srs");
+    return s ? JSON.parse(s) : {};
+  } catch (e) { return {}; }
+}
+function srsSave(srs) {
+  try { localStorage.setItem("srs", JSON.stringify(srs)); } catch (e) {}
+}
+// Kaarten komen pas in het systeem nadat de bijbehorende quiz is gedaan
+// (seeding gebeurt in de Quiz-component). We tellen/tonen alleen geseede kaarten.
+function srsDueCount(srs) {
+  const today = srsToday();
+  return Object.values(srs).filter(st => st && st.due <= today).length;
+}
+function srsGetDueCards(srs, sessionCap = 30) {
+  const today = srsToday();
+  const byId = {};
+  for (const c of srsAllCards()) byId[c.id] = c;
+  const due = Object.keys(srs)
+    .filter(id => srs[id] && srs[id].due <= today && byId[id])
+    .map(id => ({ ...byId[id], _due: srs[id].due }));
+  due.sort((a, b) => (a._due < b._due ? -1 : 1));
+  return due.slice(0, sessionCap);
+}
+// Seed de kaarten van één module obv quiz-antwoorden (correct[] booleans per index)
+function srsSeedModule(moduleId, correctness) {
+  let srs = srsLoad();
+  correctness.forEach((wasCorrect, i) => {
+    const id = `${moduleId}#${i}`;
+    // Niet overschrijven als de kaart al bestaat (behoud schema)
+    if (!srs[id]) srs = srsGrade(srs, id, wasCorrect);
+  });
+  srsSave(srs);
+  return srs;
+}
+function srsGrade(srs, cardId, correct) {
+  const today = srsToday();
+  const prev = srs[cardId] || { ease: 2.5, interval: 0, due: today, reps: 0, lapses: 0 };
+  let { ease, interval, reps, lapses } = prev;
+  if (correct) {
+    if (reps === 0) interval = 1;
+    else if (reps === 1) interval = 3;
+    else interval = Math.round(interval * ease);
+    reps += 1;
+  } else {
+    reps = 0;
+    lapses += 1;
+    interval = 1;
+    ease = Math.max(1.3, ease - 0.2);
+  }
+  return { ...srs, [cardId]: { ease, interval, reps, lapses, due: srsAddDays(interval) } };
+}
+
+// Review-overlay: cycelt door de due-kaarten, grade per kaart, persisteert
+function ReviewSession({ open, onClose, theme }) {
+  const [cards, setCards] = useState([]);
+  const [idx, setIdx] = useState(0);
+  const [chosen, setChosen] = useState(null);
+  const [tally, setTally] = useState({ correct: 0, total: 0 });
+  const srsRef = useRef(null);
+
+  useEffect(() => {
+    if (open) {
+      const srs = srsLoad();
+      srsRef.current = srs;
+      setCards(srsGetDueCards(srs));
+      setIdx(0);
+      setChosen(null);
+      setTally({ correct: 0, total: 0 });
+    }
+  }, [open]);
+
+  if (!open) return null;
+
+  const done = idx >= cards.length;
+  const card = cards[idx];
+  const answered = chosen !== null;
+  const correct = answered && card && chosen === card.correct;
+
+  const next = () => {
+    // grade + persist
+    const wasCorrect = chosen === card.correct;
+    const updated = srsGrade(srsRef.current, card.id, wasCorrect);
+    srsRef.current = updated;
+    srsSave(updated);
+    setTally(t => ({ correct: t.correct + (wasCorrect ? 1 : 0), total: t.total + 1 }));
+    setIdx(idx + 1);
+    setChosen(null);
+  };
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-start justify-center pt-[8vh] px-4 print:hidden" role="dialog" aria-modal="true" aria-label="Herhaling">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => onClose(srsDueCount(srsRef.current || {}))} />
+      <div className={`relative w-full max-w-xl ${theme.bgAlt} border ${theme.border} rounded-2xl shadow-2xl overflow-hidden`}>
+        <div className={`flex items-center justify-between px-5 py-3 border-b ${theme.borderSoft}`}>
+          <div className="flex items-center gap-2">
+            <Flame className={`w-4 h-4 ${theme.accentText}`} />
+            <h3 className="font-semibold text-sm">Herhaling{cards.length > 0 && !done ? ` · ${idx + 1}/${cards.length}` : ""}</h3>
+          </div>
+          <button onClick={() => onClose(srsDueCount(srsRef.current || {}))} className={`text-xs ${theme.textSubtle} hover:${theme.text}`}>Sluit ✕</button>
+        </div>
+
+        {cards.length === 0 ? (
+          <div className="p-8 text-center">
+            <div className="text-3xl mb-3">✅</div>
+            <h4 className="font-display text-xl font-semibold mb-1">Niks te herhalen</h4>
+            <p className={`text-sm ${theme.textMuted}`}>Je bent helemaal bij. Doe eerst wat quizzen om kaarten op te bouwen, kom dan terug.</p>
+          </div>
+        ) : done ? (
+          <div className="p-8 text-center">
+            <div className="text-3xl mb-3">{tally.correct === tally.total ? "🎯" : "💪"}</div>
+            <h4 className="font-display text-xl font-semibold mb-1">Sessie klaar</h4>
+            <p className={`text-sm ${theme.textMuted} mb-4`}>{tally.correct}/{tally.total} goed. Kaarten zijn opnieuw ingepland op basis van hoe goed je ze kende.</p>
+            <button onClick={() => onClose(srsDueCount(srsRef.current || {}))} className={`px-4 py-2 rounded-lg ${theme.accent} text-white text-sm font-semibold`}>Klaar</button>
+          </div>
+        ) : (
+          <div className="p-5">
+            <div className={`text-[10px] font-mono tracking-[0.15em] uppercase ${theme.textSubtle} mb-2`}>uit: {card.moduleId}</div>
+            <h4 className="text-base font-semibold mb-4">{card.q}</h4>
+            <div className="space-y-2">
+              {card.options.map((opt, i) => {
+                const isCorrect = i === card.correct;
+                const isChosen = chosen === i;
+                const showCorrect = answered && isCorrect;
+                const showWrong = answered && isChosen && !isCorrect;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => !answered && setChosen(i)}
+                    disabled={answered}
+                    className={`w-full text-left p-3 rounded-lg border text-sm transition ${
+                      showCorrect ? "bg-emerald-500/15 border-emerald-500/50 text-emerald-400"
+                      : showWrong ? "bg-red-500/15 border-red-500/50 text-red-400"
+                      : isChosen ? `${theme.accentSoft} ${theme.accentBorder} ${theme.text}`
+                      : `${theme.border} ${theme.bgCard} ${theme.textMuted} hover:border-orange-500`
+                    }`}
+                  >
+                    <span className={`font-mono text-xs mr-2 ${theme.textSubtle}`}>{String.fromCharCode(65 + i)}.</span>{opt}
+                  </button>
+                );
+              })}
+            </div>
+            {answered && (
+              <div className={`mt-4 p-3 rounded-lg ${correct ? "bg-emerald-500/10 border border-emerald-500/30" : "bg-amber-500/10 border border-amber-500/30"}`}>
+                <p className={`text-sm ${theme.textMuted}`}>
+                  <strong className={theme.text}>{correct ? "Goed onthouden." : "Nog niet."}</strong> {card.explanation}
+                </p>
+              </div>
+            )}
+            {answered && (
+              <div className="mt-4 flex justify-end">
+                <button onClick={next} className={`px-4 py-2 rounded-lg ${theme.accent} text-white text-sm font-semibold`}>
+                  {idx + 1 < cards.length ? "Volgende" : "Toon resultaat"}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
