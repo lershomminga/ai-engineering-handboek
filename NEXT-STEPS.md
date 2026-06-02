@@ -11,6 +11,18 @@
   hero), `index.html`, `public/favicon.svg`, `package.json`, `README.md`,
   `CLAUDE.md`. Eén vind-vervang-pass volstaat voor een nieuwe naam.
 
+## Educatieve diepte-laag (toegevoegd juni 2026)
+
+Vier leermechanismen live, getest en gepusht:
+1. **Spaced repetition** — SM-2-lite over quizvragen, geseed na quiz, herhaal-badge
+2. **Confidence-calibratie** — zekerheid vóór onthulling + calibratie-eindscherm
+3. **Interactieve widgets** — tokenizer, temperature-visualizer, kosten-calculator
+4. **Mastery-voortgang** — "Beheersing"-metric (gelezen→getoetst→beheerst) + sidebar-dots
+
+Mogelijke vervolg-edu-ideeën (uit eerdere analyse, nog niet gedaan):
+misconceptie-kaarten per module · faded/completion-code in companion-code ·
+diagnostische pretest · self-explanation prompts (typ-het-zelf vóór samenvatting).
+
 ## Waar staan we
 
 Het merk is **Promptmeester** (richting A: eigen woordmerk, Claude = onderwerp).
