@@ -6897,17 +6897,21 @@ en RAG over chunks indien nodig.`}</Pre>
       <P theme={theme}>
         Anthropic levert een officiële SDK voor agent-bouw: <InlineCode theme={theme}>@anthropic-ai/claude-agent-sdk</InlineCode> (npm/TypeScript) en <InlineCode theme={theme}>claude-agent-sdk</InlineCode> (PyPI/Python) — repos: <InlineCode theme={theme}>anthropics/claude-agent-sdk-typescript</InlineCode> en <InlineCode theme={theme}>anthropics/claude-agent-sdk-python</InlineCode>. Het wraps de loop, MCP-integratie, prompt caching, en tool definitions in één package. Voor productie-agents is dit een betere start dan zelf bouwen.
       </P>
-      <Pre theme={theme} label="TypeScript">{`import { Agent } from "@anthropic-ai/agent-sdk";
+      <Pre theme={theme} label="TypeScript · query() uit @anthropic-ai/claude-agent-sdk">{`import { query } from "@anthropic-ai/claude-agent-sdk";
 
-const agent = new Agent({
-  model: "claude-sonnet-4-6",
-  systemPrompt: "Je bent een support-agent...",
-  tools: [searchKB, createTicket, escalate],
-  maxIterations: 12,
-  onToolCall: (call) => log(call),
-});
-
-const result = await agent.run({ message: userQuery });`}</Pre>
+// query() retourneert een async-iterable van messages — de SDK draait
+// de volledige agent-loop (tool-calls, MCP, caching) voor je af.
+for await (const message of query({
+  prompt: userQuery,
+  options: {
+    model: "claude-sonnet-4-6",
+    systemPrompt: "Je bent een support-agent...",
+    allowedTools: ["searchKB", "createTicket", "escalate"],
+    maxTurns: 12,
+  },
+})) {
+  if (message.type === "assistant") console.log(message);
+}`}</Pre>
 
       <H2>Guardrails: wat élke productie-agent moet hebben</H2>
       <ul className={`space-y-2 ${theme.textMuted} text-sm list-none`}>
@@ -11532,17 +11536,14 @@ function Glossary({ theme, search, setSearch }) {
     { term: "Fast Mode", def: "Claude Code modus die Opus 4.6 gebruikt met versnelde output voor lange sessies.", related: "Claude Code" },
     { term: "Golden set", def: "Handgecureerde verzameling van 20-50 representatieve test-cases met verwachte uitkomsten.", related: "Evals" },
     { term: "Hooks", def: "Shell-commands die op events draaien in Claude Code (PreToolUse, PostToolUse, etc).", related: "Claude Code, Settings" },
-    { term: "HNSW", def: "Hierarchical Navigable Small World. Algoritme voor approximate nearest neighbor search in vector DBs.", related: "Vector DB" },
     { term: "Hybrid search", def: "Combineer semantic search (embeddings) met keyword search (BM25) voor beste resultaten.", related: "RAG, BM25" },
     { term: "MCP transport", def: "Hoe MCP client en server communiceren: stdio (lokaal), SSE (remote), Streamable HTTP.", related: "MCP" },
     { term: "Memory file (CLAUDE.md)", def: "Markdown-bestand met instructies/context dat Claude Code automatisch laadt per project of globaal.", related: "Claude Code" },
     { term: "n8n", def: "Open source workflow automation tool, vergelijkbaar met Zapier/Make. Self-hostable, code-friendly.", related: "Workflow, Automation" },
     { term: "Permission mode", def: "Claude Code modus die bepaalt welke tools automatisch mogen draaien (default, plan, acceptEdits, bypass).", related: "Claude Code, Settings" },
-    { term: "pgvector", def: "Postgres extensie die vector similarity search toevoegt. Ideaal voor 'gewone DB + RAG' opzet.", related: "Vector DB, Postgres" },
     { term: "Plan Mode", def: "Claude Code modus waarin het model verkent en plant zonder edits te doen. Tab-toggle of /plan.", related: "Claude Code" },
     { term: "Plugin (Cowork)", def: "Bundel van Skills, agents, hooks of MCP-config die je deelt of installeert via Cowork marketplace.", related: "Skills, Cowork" },
     { term: "Progressive disclosure", def: "Patroon in Skills: laad alleen wat nodig is. Niveau 1 (description) altijd, niveau 2/3 on-demand.", related: "Skills" },
-    { term: "Reranker", def: "Tweede model dat top-K chunks herrangschikt op kwaliteit. Cohere Rerank, Voyage rerank.", related: "RAG" },
     { term: "Routine", def: "Geplande remote agent (cron job) in Claude Cloud / Dispatch.", related: "Schedule, Cloud agents" },
     { term: "Second Brain", def: "Extern systeem dat je input opvangt, organiseert en op verzoek teruggeeft. Met AI: automatisch verrijkt.", related: "n8n, RAG" },
     { term: "Slash command", def: "Commando dat begint met / in Claude Code (/clear, /compact, /plan, ...). Triggert specifieke acties.", related: "Claude Code" },
@@ -11685,7 +11686,6 @@ function Glossary({ theme, search, setSearch }) {
 
     // SECURITY / GUARDRAILS
     { term: "AVG / GDPR", def: "EU-privacywet. Voor AI: art. 22 (no automated decision), art. 35 (DPIA voor high-risk), art. 33 (72u breach-notification).", related: "Compliance" },
-    { term: "Constitutional Classifiers", def: "Anthropic jailbreak-defense (2025): 86% → 4,4% success-rate met ~1% extra compute, 0,05% extra refusal.", related: "Guardrails" },
     { term: "DPIA", def: "Data Protection Impact Assessment. AVG art. 35 verplicht voor high-risk AI-processing.", related: "GDPR" },
     { term: "DORA", def: "EU Digital Operational Resilience Act. Voor financiële sector, geldt sinds jan 2025.", related: "Compliance, Finance" },
     { term: "EU AI Act", def: "EU verordening 2024/1689. High-risk AI vereist compliance, deadline aug 2026 voor de meeste artikelen.", related: "Compliance" },
@@ -12464,7 +12464,7 @@ def self_preference_check(generator_family, judge_family):
 
       <H2>Bootstrap-CI + McNemar voor eval-runs</H2>
       <Pre theme={theme} label="Python · statistical significance bij prompt-versies">{`import numpy as np
-from scipy.stats import contingency
+from statsmodels.stats.contingency_tables import mcnemar  # pip install statsmodels
 
 def bootstrap_ci(scores, n_boot=1000, alpha=0.05):
     """95% CI op mean accuracy via bootstrap-resampling.
@@ -12482,7 +12482,7 @@ def mcnemar_test(v1_correct, v2_correct):
     n01 = sum(1 for a, b in zip(v1_correct, v2_correct) if not a and b)
     n10 = sum(1 for a, b in zip(v1_correct, v2_correct) if a and not b)
     table = [[0, n01], [n10, 0]]
-    return contingency.mcnemar(table, exact=True).pvalue
+    return mcnemar(table, exact=True).pvalue
 
 # Sample-size calculator (Cochran's formula)
 def required_sample_size(p=0.5, effect=0.05, conf=0.95):
