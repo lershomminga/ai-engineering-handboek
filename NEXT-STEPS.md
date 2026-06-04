@@ -19,11 +19,20 @@ Volledig audit-rapport: `STUDIEBOEK-AUDIT.md`. Fase 1 (4 blokken) uitgevoerd + g
 - Blok 3: verzonnen Claude-Code-feiten (hook-events 27→9, env-vars→stdin, subagent-velden, AgentSDK hooks)
 - Blok 4: consistentie + verouderd (GraphRAG, OTEL, Huyen, Fly, Hetzner, Swarm→Agents SDK, AI SDK v5, n8n scheduleTrigger, Cloudflare CPU, FineTuning 70B)
 
-**Nog te doen uit audit (Fase 2-4):** centrale feiten-tabel, term-linking-laag
-(Schemas/Glossary/Cases → definities), WorkflowChecklist aanvinkbaar, Deployment
-ontdubbelen, nieuwe rekentools (ROI/router/cache/latency), Exercises↔companion-code
-linken, ClaudeDeep herschrijven, Voice barge-in. Categorie-E speculatieve cijfers
-(benchmarks, salarissen, ROI) nog van "gerapporteerd/peildatum"-disclaimers voorzien.
+## Studieboek-audit Fase 2 (coherentie) — AFGEROND juni 2026
+
+- Blok A: WorkflowChecklist aanvinkbaar (echte toggles via `exerciseProgress`,
+  voortgangsbalk + per-categorie teller)
+- Blok B: Glossary `related`-veld klikbaar (term-linking-laag → zoek-filter)
+- Blok C: Exercises ↔ companion-code gelinkt (`EXERCISE_REPOS`-map, paste-and-run-regel per hoofdstuk)
+- Blok D: Deployment-module ontdubbeld (ondiepe Monitoring/Kosten/Veiligheid weg,
+  diepere versies behouden, prompt-injection-Callout verplaatst)
+
+**Nog te doen uit audit (Fase 3-4):** nieuwe rekentools (ROI/router/cache/latency),
+ClaudeDeep herschrijven rond denk-shifts, Voice barge-in-sectie. Categorie-E
+speculatieve cijfers (benchmarks, salarissen, ROI, waarderingen) nog van
+"gerapporteerd/peildatum"-disclaimers voorzien. Centrale feiten-tabel:
+gedeprioriteerd (canon staat al in TokensContext + Glossary).
 
 ## Educatieve diepte-laag (toegevoegd juni 2026)
 
