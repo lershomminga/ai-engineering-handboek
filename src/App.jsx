@@ -18811,6 +18811,66 @@ ws.on("message", msg => {
         <strong className={theme.text}>Pricing (GA 2025):</strong> $0.06/min audio-in, $0.24/min audio-out, cached input 80× korting ($0.40/1M). Plus SIP-support (telefonie), MCP-servers (tools), image-inputs (sept 2025). Voor Claude: workaround via Vapi met Claude als LLM-laag — native S2S verslaat stitched typisch met ~1s minder turn-latency.
       </P>
 
+      <H2>Barge-in: de gebruiker mag je onderbreken</H2>
+      <P theme={theme}>
+        Het verschil tussen een speelgoed-demo en een voice-agent die écht natuurlijk voelt, is <strong className={theme.text}>barge-in</strong>: de gebruiker kan midden in jouw antwoord beginnen te praten, en de agent stopt onmiddellijk met praten en luistert. Mensen doen dit constant ("ja — nee wacht, ik bedoel iets anders"). Een agent die stug doorratelt tot het einde van zijn zin voelt als een ouderwetse keuzemenu-robot.
+      </P>
+      <P theme={theme}>
+        Barge-in klinkt simpel ("stop de audio") maar heeft vier bewegende delen die allemaal binnen ~100-200ms moeten gebeuren, anders praat de agent over de gebruiker heen:
+      </P>
+      <ul className={`space-y-2 ${theme.textMuted} list-none`}>
+        <li>1. <strong className={theme.text}>Detecteren</strong> — de VAD ziet dat de gebruiker begint te spreken terwijl de agent nog audio afspeelt.</li>
+        <li>2. <strong className={theme.text}>Audio stoppen</strong> — playback van de TTS direct killen én de buffer met nog-niet-afgespeelde audio leegmaken. Vergeet je de buffer, dan hoor je de agent nog 1-2 seconden naijlen nadat hij "gestopt" is.</li>
+        <li>3. <strong className={theme.text}>Generatie annuleren</strong> — de in-flight LLM- en TTS-calls cancelen. Anders betaal je tokens en audio-seconden voor woorden die niemand hoort.</li>
+        <li>4. <strong className={theme.text}>Context bijknippen</strong> — de agent moet weten hóéver hij kwam. Zei hij "Uw bestelnummer is 12345 en de levering is…" maar werd hij onderbroken na "12345", dan moet de gespreks-context dáár eindigen — niet de volledige, nooit-gehoorde zin bevatten. Doe je dit niet, dan denkt het model dat de gebruiker alles heeft gehoord en raakt het gesprek ontspoord.</li>
+      </ul>
+      <P theme={theme}>
+        Punt 4 is wat de meeste zelfbouw-pipelines vergeten. Het is het verschil tussen een agent die na een onderbreking soepel verdergaat en eentje die antwoordt op een vraag die hij zelf nog niet eens had uitgesproken.
+      </P>
+      <Pre theme={theme} label="Node.js · barge-in met OpenAI Realtime (server-VAD)">{`// 1) Zet auto-interrupt aan in de sessie-config:
+session: {
+  turn_detection: {
+    type: "server_vad",
+    threshold: 0.5,            // hoger = minder gevoelig (minder valse barge-ins)
+    prefix_padding_ms: 300,    // audio vóór de spraak-onset meenemen
+    silence_duration_ms: 500,  // hoeveel stilte telt als "klaar met praten"
+    interrupt_response: true,  // server cancelt de lopende response automatisch
+  }
+}
+
+// 2) Client-side: stop playback op het moment dat de gebruiker begint
+let assistantItemId = null;     // id van het huidige antwoord
+ws.on("message", (msg) => {
+  const ev = JSON.parse(msg);
+
+  if (ev.type === "response.output_item.added") assistantItemId = ev.item.id;
+
+  // VAD detecteert spraak-onset → BARGE-IN
+  if (ev.type === "input_audio_buffer.speech_started") {
+    const playedMs = stopPlayback();   // kill speaker + leeg de audio-queue NU
+    // vertel het model hoeveel het écht uitsprak (context bijknippen):
+    if (assistantItemId) {
+      ws.send(JSON.stringify({
+        type: "conversation.item.truncate",
+        item_id: assistantItemId,
+        content_index: 0,
+        audio_end_ms: playedMs,        // alles ná dit punt was niet hoorbaar
+      }));
+    }
+  }
+});`}</Pre>
+      <Callout kind="warn">
+        <P theme={theme}>
+          <strong className={theme.text}>De #1 barge-in-bug: zelf-onderbreking.</strong> De agent hoort zijn eigen stem via de speaker terug in de microfoon en de VAD denkt dat de gebruiker praat — de agent valt zichzelf in de rede. Telefonie-stacks lossen dit op met ingebouwde echo-cancellatie; in de browser of op een device heb je <strong className={theme.text}>acoustic echo cancellation</strong> nodig (WebRTC's <InlineCode theme={theme}>echoCancellation: true</InlineCode>) of simpelweg een koptelefoon. Test altijd op een speaker, niet alleen met oortjes.
+        </P>
+      </Callout>
+      <P theme={theme}>
+        <strong className={theme.text}>Gevoeligheid tunen.</strong> Niet elk geluid mag onderbreken. <em>Backchannels</em> ("mm-hmm", "ja", "oké") zijn instemming, geen interruptie — onderbreek je daarop, dan stopt de agent constant onnodig. Zet de VAD-<InlineCode theme={theme}>threshold</InlineCode> wat hoger en de <InlineCode theme={theme}>silence_duration_ms</InlineCode> kort genoeg om responsief te blijven. Geavanceerde stacks gebruiken een aparte classifier die backchannels van echte interrupties scheidt.
+      </P>
+      <P theme={theme}>
+        <strong className={theme.text}>Wie regelt het voor je?</strong> Vapi, Pipecat, LiveKit Agents en de OpenAI Realtime API hebben barge-in ingebouwd — jij configureert alleen de gevoeligheid. Bouw je een eigen gestitchte STT→LLM→TTS-pipeline, dan moet je alle vier de stappen zelf implementeren; dat is precies waarom de meeste teams een platform kiezen.
+      </P>
+
       <H2>Sub-300ms streaming TTS — sentence-boundary trick</H2>
       <Pre theme={theme} label="Python · stream LLM tokens → TTS bij zin-einde">{`import re, asyncio
 SENTENCE_END = re.compile(r"[.!?]\\s+")
