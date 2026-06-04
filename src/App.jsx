@@ -914,9 +914,9 @@ function TemperatureWidget({ theme }) {
 
 // 3. Kosten-calculator — maandrekening obv model + volume + caching/routing.
 const COST_MODELS = {
-  "claude-haiku-4-5": { in: 0.80, out: 4.00, label: "Haiku 4.5" },
+  "claude-haiku-4-5": { in: 1.00, out: 5.00, label: "Haiku 4.5" },
   "claude-sonnet-4-6": { in: 3.00, out: 15.00, label: "Sonnet 4.6" },
-  "claude-opus-4-7": { in: 15.00, out: 75.00, label: "Opus 4.7" },
+  "claude-opus-4-7": { in: 5.00, out: 25.00, label: "Opus 4.7" },
 };
 function CostWidget({ theme }) {
   const [model, setModel] = useState("claude-sonnet-4-6");
@@ -3456,7 +3456,7 @@ function ClaudeModels({ theme }) {
             <tr className={`border-t ${theme.border}`}>
               <td className="p-3 font-mono text-xs">claude-opus-4-7</td>
               <td className="p-3">Slimst, beste reasoning, agentic werk</td>
-              <td className="p-3 font-mono text-xs">$15 / $75 per M</td>
+              <td className="p-3 font-mono text-xs">$5 / $25 per M</td>
               <td className="p-3">1M tokens</td>
             </tr>
             <tr className={`border-t ${theme.border}`}>
@@ -3651,8 +3651,8 @@ Beperkingen:
             </tr>
           </thead>
           <tbody className={theme.bgCard}>
-            <tr className={`border-t ${theme.border}`}><td className="p-3">Opus 4.7</td><td className="p-3">apr 2026</td><td className="p-3">$15 / $75</td><td className="p-3">1M</td><td className="p-3">Vlaggenschip, adaptive thinking only</td></tr>
-            <tr className={`border-t ${theme.border}`}><td className="p-3">Opus 4.6</td><td className="p-3">feb 2026</td><td className="p-3">$15 / $75</td><td className="p-3">1M</td><td className="p-3">Vorige flagship, nog actief</td></tr>
+            <tr className={`border-t ${theme.border}`}><td className="p-3">Opus 4.7</td><td className="p-3">apr 2026</td><td className="p-3">$5 / $25</td><td className="p-3">1M</td><td className="p-3">Vlaggenschip, adaptive thinking only</td></tr>
+            <tr className={`border-t ${theme.border}`}><td className="p-3">Opus 4.6</td><td className="p-3">feb 2026</td><td className="p-3">$5 / $25</td><td className="p-3">1M</td><td className="p-3">Vorige flagship, nog actief</td></tr>
             <tr className={`border-t ${theme.border}`}><td className="p-3">Sonnet 4.6</td><td className="p-3">feb 2026</td><td className="p-3">$3 / $15</td><td className="p-3">1M</td><td className="p-3">Werkpaard, beste prijs/prestatie</td></tr>
             <tr className={`border-t ${theme.border}`}><td className="p-3">Haiku 4.5</td><td className="p-3">okt 2025</td><td className="p-3">$1 / $5</td><td className="p-3">200K</td><td className="p-3">Snel/goedkoop, sub-agent</td></tr>
           </tbody>
@@ -6056,7 +6056,7 @@ when_to_use: Extra triggers, voorbeelden van vragen die de skill activeren.
 disable-model-invocation: false
 user-invocable: true
 allowed-tools: Read Grep Bash(git status *)
-model: claude-sonnet-4-7
+model: claude-sonnet-4-6
 effort: high
 context: fork
 agent: Explore
@@ -7656,7 +7656,7 @@ graph.invoke(input, config={"configurable": {"thread_id": f"user-{uid}-{session}
       whisper.transcribe(event.data.url)
     );
     const summary = await step.ai.infer("summarize", {
-      model: anthropic("claude-sonnet-4-7"),
+      model: anthropic("claude-sonnet-4-6"),
       body: { messages: [{ role: "user", content: transcript }] },
     });
     await step.run("notify", () => slack.post(summary));
@@ -7680,7 +7680,7 @@ class TriageDecision(BaseModel):
     severity: Literal["low", "medium", "critical"]
     department: Literal["billing", "tech", "sales"]
 
-triage = Agent("claude-sonnet-4-7", output_type=TriageDecision)
+triage = Agent("claude-sonnet-4-6", output_type=TriageDecision)
 result = triage.run_sync("Mijn factuur klopt niet en ik wil opzeggen")
 # result.output.department is gegarandeerd één van de drie strings`}</Pre>
       <P theme={theme}>
@@ -7693,7 +7693,7 @@ result = triage.run_sync("Mijn factuur klopt niet en ik wil opzeggen")
       </P>
       <Pre theme={theme} label="Vercel AI SDK abort patroon">{`const controller = new AbortController();
 const stream = await streamText({
-  model: anthropic("claude-sonnet-4-7"),
+  model: anthropic("claude-sonnet-4-6"),
   messages,
   abortSignal: controller.signal,
   onAbort: async ({ partialResult }) => {
@@ -9976,7 +9976,7 @@ class LLMRouter:
     async def complete(self, messages, *, allow_fallback=True):
         try:
             return await self.primary.messages.create(
-                model="claude-sonnet-4-7",
+                model="claude-sonnet-4-6",
                 max_tokens=4096,
                 messages=messages,
                 extra_headers={"anthropic-beta": "prompt-caching-2024-07-31"},
@@ -10500,14 +10500,14 @@ Schaduw-deploys                check          A/B nieuwe prompt zonder users te 
         OpenTelemetry (OTel) is bezig met het standaardiseren van semantic conventions voor GenAI. Het idee: ongeacht welk SDK of welke provider je gebruikt, de span-attributen heten hetzelfde. Dat maakt tooling vendor-onafhankelijk.
       </P>
       <P theme={theme}>
-        <strong className={theme.text}>Span-naam conventie:</strong> <InlineCode theme={theme}>{`{gen_ai.operation.name} {gen_ai.request.model}`}</InlineCode>, bijvoorbeeld "chat claude-sonnet-4-7" of "embeddings text-embedding-3-large". Voor agents wordt het "invoke_agent {gen_ai.agent.name}".
+        <strong className={theme.text}>Span-naam conventie:</strong> <InlineCode theme={theme}>{`{gen_ai.operation.name} {gen_ai.request.model}`}</InlineCode>, bijvoorbeeld "chat claude-sonnet-4-6" of "embeddings text-embedding-3-large". Voor agents wordt het "invoke_agent {gen_ai.agent.name}".
       </P>
       <Pre theme={theme} label="Verplichte/aanbevolen attributen op een chat-span">{`gen_ai.operation.name      = "chat"
 gen_ai.system              = "anthropic"
-gen_ai.request.model       = "claude-sonnet-4-7"
+gen_ai.request.model       = "claude-sonnet-4-6"
 gen_ai.request.temperature = 0.2
 gen_ai.request.max_tokens  = 1024
-gen_ai.response.model      = "claude-sonnet-4-7-20251022"
+gen_ai.response.model      = "claude-sonnet-4-6-20251022"
 gen_ai.response.id         = "msg_01ABCD..."
 gen_ai.response.finish_reasons = ["end_turn"]
 gen_ai.usage.input_tokens  = 245
@@ -10521,11 +10521,11 @@ gen_ai.usage.output_tokens = 187`}</Pre>
         Een agent-run is geen één call, het is een boom. Root-span = de hele agent-loop (<InlineCode theme={theme}>invoke_agent search_agent</InlineCode>). Daaronder hangen child-spans per iteratie: een chat-span voor de LLM-keuze, tool-spans voor elke tool-call, embedding-spans voor RAG-lookups, en eventueel sub-agent spans als je nested agents draait.
       </P>
       <Pre theme={theme} label="Voorbeeld span-tree">{`invoke_agent search_agent                       12.4s
-  chat claude-sonnet-4-7   (planning)            1.8s
+  chat claude-sonnet-4-6   (planning)            1.8s
   execute_tool web_search                        3.2s
-  chat claude-sonnet-4-7   (synthesis)           2.1s
+  chat claude-sonnet-4-6   (synthesis)           2.1s
   execute_tool fetch_url                         4.9s
-  chat claude-sonnet-4-7   (final answer)        0.4s`}</Pre>
+  chat claude-sonnet-4-6   (final answer)        0.4s`}</Pre>
       <P theme={theme}>
         Concreet leveren agentic frameworks (LangChain, LlamaIndex, AG2, CrewAI, het Anthropic SDK, OpenAI Agents) tegenwoordig met een paar regels initialisatie OTel-instrumentatie. Bijvoorbeeld met OpenLLMetry:
       </P>
@@ -10617,7 +10617,7 @@ guardrails:
         <li>• <strong className={theme.text}>Top 10 users by spend</strong> — vaak vind je hier abuse of een bug die loops triggert</li>
         <li>• <strong className={theme.text}>Cost per feature</strong> — laat zien dat 80% van je rekening uit één feature komt; daar moet je dus eerst optimaliseren</li>
         <li>• <strong className={theme.text}>Cost per plan tier</strong> — hoeveel kost een Free user vs een Enterprise user; nodig voor unit-economics</li>
-        <li>• <strong className={theme.text}>Cost per model</strong> — laat zien of de migratie van Sonnet 4.7 naar Haiku echt de besparing opleverde</li>
+        <li>• <strong className={theme.text}>Cost per model</strong> — laat zien of de migratie van Sonnet 4.6 naar Haiku echt de besparing opleverde</li>
         <li>• <strong className={theme.text}>Cached vs uncached tokens</strong> — directe impact van prompt caching op je marge</li>
       </ul>
 
@@ -15130,7 +15130,7 @@ Backend           Cloudflare Workers (100k req/dag free, 10ms CPU per req)
 Database          Supabase Postgres (500MB free, 50K MAU)
 Vector store      pgvector op Supabase (geen extra service)
 Auth              Supabase Auth (gratis, social-login built-in)
-LLM               Claude Haiku 4.5 ($0.80/1M in, $4/1M out)
+LLM               Claude Haiku 4.5 ($1/1M in, $5/1M out)
 Email             Resend (gratis: 3K/maand)
 Analytics         Plausible Cloud (€9/m) of self-host (gratis)
 
@@ -15802,7 +15802,7 @@ function CostOpt({ theme }) {
     elif classification == "code-complex":
         return sonnet.answer(query)       # $3/$15 per M
     else:
-        return opus.answer(query)         # $15/$75 per M
+        return opus.answer(query)         # $5/$25 per M
 
 # Resultaat: gemiddelde kosten gedeeld door 3-10.`}</Pre>
 
@@ -15913,7 +15913,7 @@ messages = [{
 
       <H2>Batch API: wanneer 50% korting echt 95% wordt</H2>
       <P theme={theme}>
-        De Batch API verwerkt asynchroon en kost 50% van standaardpricing — voor zowel input als output, voor alle Claude-modellen. Sonnet 4.6 zakt van $3/$15 naar $1.50/$7.50, Opus 4.6 van $15/$75 naar $7.50/$37.50. De echte hefboom ontstaat door <strong className={theme.text}>stacking</strong>: batch + caching = tot 95% korting op je system-prompt-tokens.
+        De Batch API verwerkt asynchroon en kost 50% van standaardpricing — voor zowel input als output, voor alle Claude-modellen. Sonnet 4.6 zakt van $3/$15 naar $1.50/$7.50, Opus 4.7 van $5/$25 naar $2.50/$12.50. De echte hefboom ontstaat door <strong className={theme.text}>stacking</strong>: batch + caching = tot 95% korting op je system-prompt-tokens.
       </P>
       <Pre theme={theme} label="Batch submission workflow">{`import anthropic
 client = anthropic.Anthropic()

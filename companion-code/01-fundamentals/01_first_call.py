@@ -24,10 +24,10 @@ def main() -> None:
     print("\n=== Usage ===")
     print(f"Input tokens:  {resp.usage.input_tokens}")
     print(f"Output tokens: {resp.usage.output_tokens}")
-    # Cost estimate (haiku-4-5: $0.80/1M in, $4/1M out)
+    # Cost estimate (haiku-4-5: $1/1M in, $5/1M out)
     cost = (
-        resp.usage.input_tokens * 0.80 / 1_000_000
-        + resp.usage.output_tokens * 4.00 / 1_000_000
+        resp.usage.input_tokens * 1.00 / 1_000_000
+        + resp.usage.output_tokens * 5.00 / 1_000_000
     )
     print(f"Cost (USD):    ${cost:.6f}")
 

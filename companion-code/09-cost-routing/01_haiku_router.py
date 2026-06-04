@@ -24,9 +24,9 @@ MODEL_MAP = {
 
 # Pricing per 1M
 PRICES = {
-    "claude-haiku-4-5":  {"in": 0.80, "out": 4.00},
+    "claude-haiku-4-5":  {"in": 1.00, "out": 5.00},
     "claude-sonnet-4-6": {"in": 3.00, "out": 15.00},
-    "claude-opus-4-7":   {"in": 15.00, "out": 75.00},
+    "claude-opus-4-7":   {"in": 5.00, "out": 25.00},
 }
 
 

@@ -1,4 +1,4 @@
-{"input": "Wat kost Claude Haiku 4.5 per 1M input tokens?", "expected": "$0.80", "category": "factual"}
+{"input": "Wat kost Claude Haiku 4.5 per 1M input tokens?", "expected": "$1", "category": "factual"}
 {"input": "Wat is de default cache TTL bij Anthropic per mei 2026?", "expected": "5 minuten", "category": "factual"}
 {"input": "Welk MCP-transport is deprecated?", "expected": "SSE", "category": "factual"}
 {"input": "Wat staat #1 in de OWASP LLM Top-10?", "expected": "prompt injection", "category": "factual"}

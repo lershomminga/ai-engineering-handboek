@@ -23,7 +23,7 @@ tests:
       question: "Wat kost Claude Haiku 4.5 per 1M input tokens?"
     assert:
       - type: icontains
-        value: "0.80"
+        value: "1"
   - vars:
       question: "Wat is de default cache TTL bij Anthropic per mei 2026?"
     assert:
