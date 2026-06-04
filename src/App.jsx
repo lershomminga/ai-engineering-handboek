@@ -3952,7 +3952,7 @@ Code:
   resp = client.messages.create(
       model="claude-opus-4-7",
       max_tokens=4096,
-      effort="high",    # adaptive: model beslist binnen high-budget
+      thinking={"type": "adaptive", "effort": "high"},  # model beslist binnen high-budget
       messages=[...]
   )
 
@@ -7910,7 +7910,7 @@ response = client.messages.create(
         </Card>
         <Card theme={theme}>
           <div className="font-semibold mb-1">Contextual Retrieval</div>
-          <p className={`text-sm ${theme.textMuted}`}>Anthropic-techniek: voor elk chunk eerst een korte context-samenvatting prepended. Verhoogt accuracy 35-50% op bench. Werkt fantastisch met prompt caching.</p>
+          <p className={`text-sm ${theme.textMuted}`}>Anthropic-techniek: voor elk chunk eerst een korte context-samenvatting prepended. Reduceert retrieval-fouten met 35% (alleen), 49% (+BM25), tot 67% (+reranking). Werkt fantastisch met prompt caching.</p>
         </Card>
       </div>
 
@@ -8304,8 +8304,8 @@ Wanneer klassiek: technische manuals, FAQ's, korte items.`}</Pre>
       <P theme={theme}>
         Klassieke GraphRAG (zie sectie boven) is duur door eager entity-extraction op je hele corpus. <strong className={theme.text}>LazyGraphRAG</strong> draait dat om: bouw alleen graph-edges on-demand bij query-tijd voor de relevante chunks. Levert vergelijkbare quality op global-queries tegen <strong className={theme.text}>0,1% van de indexing-cost</strong> en ~700× goedkopere queries. Beslis-update voor de GraphRAG-keuze:
       </P>
-      <Pre theme={theme}>{`local fact lookup            → vector RAG       (97% accuracy)
-multi-hop / entity-relaties  → GraphRAG          (91% vs 34%)
+      <Pre theme={theme}>{`local fact lookup            → vector RAG       (snel, goedkoop)
+multi-hop / entity-relaties  → GraphRAG          (~80% vs ~50% naive)
 global summary, cheap        → LazyGraphRAG     (vergelijkbaar, 700× cheaper)
 on-the-fly geen corpus-prep  → LazyGraphRAG`}</Pre>
 
@@ -9237,8 +9237,8 @@ Niet aanbevolen:
   React Context (alleen)             rerender problemen bij streaming`}</Pre>
 
       <H2>Vercel AI SDK — de snelste route voor chat</H2>
-      <Pre theme={theme} label="Volledige chat-app in 50 regels">{`// app/api/chat/route.ts
-import { streamText } from "ai";
+      <Pre theme={theme} label="Volledige chat-app in 50 regels (AI SDK 5)">{`// app/api/chat/route.ts
+import { streamText, convertToModelMessages } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 
 export async function POST(req: Request) {
@@ -9246,31 +9246,33 @@ export async function POST(req: Request) {
   const result = streamText({
     model: anthropic("claude-sonnet-4-6"),
     system: "You are a helpful assistant.",
-    messages,
+    messages: convertToModelMessages(messages),  // AI SDK 5
   });
-  return result.toDataStreamResponse();
+  return result.toUIMessageStreamResponse();      // AI SDK 5 (was: toDataStreamResponse)
 }
 
 // app/page.tsx
 "use client";
-import { useChat } from "ai/react";
+import { useChat } from "@ai-sdk/react";           // AI SDK 5 (was: "ai/react")
 
 export default function Chat() {
-  const { messages, input, handleInputChange, handleSubmit, isLoading, stop } =
-    useChat();
+  const { messages, sendMessage, status, stop } = useChat();
+  const [input, setInput] = useState("");
 
   return (
     <div className="max-w-2xl mx-auto p-4">
       {messages.map(m => (
         <div key={m.id} className={m.role==="user" ? "text-right" : ""}>
-          <strong>{m.role}:</strong> {m.content}
+          <strong>{m.role}:</strong>
+          {/* AI SDK 5: bericht-inhoud zit in typed parts, niet in .content */}
+          {m.parts.map((p, i) => p.type === "text" ? <span key={i}>{p.text}</span> : null)}
         </div>
       ))}
-      <form onSubmit={handleSubmit}>
-        <input value={input} onChange={handleInputChange}
+      <form onSubmit={(e) => { e.preventDefault(); sendMessage({ text: input }); setInput(""); }}>
+        <input value={input} onChange={(e) => setInput(e.target.value)}
                className="border w-full p-2" placeholder="Vraag iets..." />
-        {isLoading
-          ? <button onClick={stop}>Stop</button>
+        {status === "streaming"
+          ? <button type="button" onClick={stop}>Stop</button>
           : <button type="submit">Stuur</button>}
       </form>
     </div>
@@ -9529,7 +9531,7 @@ export async function POST(req: Request) {
         },
       }),
     },
-    maxSteps: 5,
+    stopWhen: stepCountIs(5),   // AI SDK 5 (was: maxSteps: 5)
     onStepFinish: ({ usage }) => trackCost(usage),
   });
 
@@ -9574,12 +9576,11 @@ Integration       Playwright + fixtures         volledige flow E2E
 LLM-eval          Promptfoo / Braintrust         response-quality, regression
 Load              k6 op streaming endpoints      throughput, p95 latency
 
-# Mock-provider voor unit-tests
-import { MockLanguageModelV1 } from "@ai-sdk/mock-provider";
-const mock = new MockLanguageModelV1({
+# Mock-provider voor unit-tests (AI SDK 5)
+import { MockLanguageModelV2 } from "ai/test";
+const mock = new MockLanguageModelV2({
   doStream: async () => ({
     stream: simulateChunks(["Hallo", " wereld", "!"]),
-    rawCall: { rawPrompt: null, rawSettings: {} },
   }),
 });
 
@@ -9979,7 +9980,8 @@ class LLMRouter:
                 model="claude-sonnet-4-6",
                 max_tokens=4096,
                 messages=messages,
-                extra_headers={"anthropic-beta": "prompt-caching-2024-07-31"},
+                # Prompt caching is GA — geen beta-header meer nodig; zet
+                # gewoon "cache_control" op de blocks die je wilt cachen.
             )
         except (APIStatusError, APITimeoutError) as e:
             if not allow_fallback or e.status_code in (400, 401):
@@ -10059,7 +10061,7 @@ async def chat(
 
       <H2>Edge runtime — Workers als glue, niet als compute</H2>
       <P theme={theme}>
-        Cloudflare Workers starten in ~5ms (vs 200-1000ms+ voor AWS Lambda) dankzij V8 Isolates. Maar de constraints zijn hard: <strong className={theme.text}>128 MB memory, 10ms CPU op het free tier (paid: 30s wallclock), geen native modules, geen lange-leefduur sockets</strong>.
+        Cloudflare Workers starten in ~5ms (vs 200-1000ms+ voor AWS Lambda) dankzij V8 Isolates. Constraints: <strong className={theme.text}>128 MB memory, geen native modules, geen lange-leefduur sockets</strong>. De vroegere 10ms-CPU-limiet is opgeheven — sinds 2024 mag een Worker tot 5 min CPU (instelbaar), dus voor LLM-proxying (vooral I/O-wachten) is CPU-tijd zelden de bindende factor. Het free tier blijft begrensd op aantal requests/dag, niet op CPU-ms.
       </P>
       <P theme={theme}>
         De juiste rolverdeling: Workers handelt routing, auth, rate limiting en streaming-passthrough af; de LLM call zelf gaat naar Anthropic of een dedicated GPU service. <strong className={theme.text}>De Worker is je glue layer, niet je compute layer.</strong>
@@ -10315,7 +10317,7 @@ Embeddings cachen              ~100%          herbruik bij identieke input`}</Pr
             <tr className={`border-t ${theme.border}`}><td className="p-3">Cloudflare Workers/Pages</td><td className="p-3">Edge-apps, hoge volume</td><td className="p-3">Goedkoopst op schaal</td><td className="p-3">100k req/dag gratis</td></tr>
             <tr className={`border-t ${theme.border}`}><td className="p-3">Railway</td><td className="p-3">Backend + DB samen</td><td className="p-3">$5/mo+ gebruiksgebaseerd</td><td className="p-3">$5 trial credit</td></tr>
             <tr className={`border-t ${theme.border}`}><td className="p-3">Render</td><td className="p-3">Backend, cron, web services</td><td className="p-3">$7/mo per service</td><td className="p-3">Free tier (slaap na 15m)</td></tr>
-            <tr className={`border-t ${theme.border}`}><td className="p-3">Fly.io</td><td className="p-3">Wereldwijd edge, latency-kritiek</td><td className="p-3">Pay-as-go, betaalbaar</td><td className="p-3">Beperkt free</td></tr>
+            <tr className={`border-t ${theme.border}`}><td className="p-3">Fly.io</td><td className="p-3">Wereldwijd edge, latency-kritiek</td><td className="p-3">Pay-as-go, betaalbaar</td><td className="p-3">Geen free tier (sinds eind 2024)</td></tr>
             <tr className={`border-t ${theme.border}`}><td className="p-3">Hetzner Cloud (VPS)</td><td className="p-3">Self-host alles, max controle</td><td className="p-3">€4/mo voor 2vCPU</td><td className="p-3">Geen, maar goedkoopst</td></tr>
             <tr className={`border-t ${theme.border}`}><td className="p-3">AWS / GCP / Azure</td><td className="p-3">Enterprise, compliance</td><td className="p-3">Duur tenzij optimized</td><td className="p-3">Free credits eerste jaar</td></tr>
           </tbody>
@@ -11528,7 +11530,7 @@ function Glossary({ theme, search, setSearch }) {
     { term: "Claude Dispatch", def: "Cloud-laag voor langlopende, autonome agents (cron, /ultrareview, scheduled tasks).", related: "Cloud agents" },
     { term: "Compact (/compact)", def: "Slash-command in Claude Code dat de huidige conversatie samenvat om context te besparen.", related: "Claude Code" },
     { term: "Computer Use", def: "Capability waarbij Claude een sandbox-VM bestuurt: muis, toetsenbord, screenshots.", related: "Tool use" },
-    { term: "Contextual Retrieval", def: "Anthropic-techniek: voeg context-samenvatting toe aan elk chunk voor embedding. Verhoogt accuracy 35-50%.", related: "RAG, Chunking" },
+    { term: "Contextual Retrieval", def: "Anthropic-techniek: voeg context-samenvatting toe aan elk chunk voor embedding. Reduceert retrieval-fouten 35% (alleen) tot 67% (+BM25 +reranking).", related: "RAG, Chunking" },
     { term: "Cosine similarity", def: "Maat voor hoe vergelijkbaar twee vectoren zijn (hoek tussen ze). Standaard in vector search.", related: "Embeddings, Vector DB" },
     { term: "CRON", def: "Standaard voor scheduled tasks. \"0 9 * * MON\" = elke maandag 9u. Gebruikt in n8n, Cloud agents, etc.", related: "Schedule" },
     { term: "Emergence", def: "Capabilities die spontaan ontstaan bij grote modellen, niet expliciet getraind. Bv. redeneren over wiskunde.", related: "LLM, Scale" },
@@ -11829,7 +11831,7 @@ function Resources({ theme }) {
       items: [
         { name: "Designing Machine Learning Systems", url: "Chip Huyen", desc: "ML in productie. Niet specifiek LLM, maar fundamenten zitten goed." },
         { name: "Build a Large Language Model (From Scratch)", url: "Sebastian Raschka", desc: "Bouw zelf een mini-GPT in PyTorch. Beste manier om diep te begrijpen." },
-        { name: "AI Engineering", url: "Chip Huyen (2024)", desc: "Het eerste echte boek specifiek over AI engineering, niet ML." },
+        { name: "AI Engineering", url: "Chip Huyen (O'Reilly, 2025)", desc: "Het eerste echte boek specifiek over AI engineering, niet ML." },
       ]
     },
     {
@@ -12665,8 +12667,9 @@ function ClaudeDeep({ theme }) {
         De krachtigste tool van Anthropic voor developers. Een terminal-app die op jouw computer draait, je code leest, edits doet, tests runt, git commits maakt — alles op jouw aanwijzing. Volledige documentatie en alle slash-commando's staan in het volgende hoofdstuk <strong className={theme.text}>Claude Code (CLI) volledig</strong>.
       </P>
       <Pre theme={theme}>{`Globaal installeren:
-  macOS / Linux:    brew install anthropics/claude/claude
-  Windows:          npm install -g @anthropic-ai/claude-code
+  Alle platforms:   npm install -g @anthropic-ai/claude-code
+  macOS / Linux:    brew install --cask claude-code   (of curl install-script)
+  Windows:          npm install -g @anthropic-ai/claude-code  (of winget)
 
   Inloggen:         claude login
 
@@ -14800,9 +14803,9 @@ en verdwijnen vergeten clippings vanzelf.`}</Pre>
   "name": "Weekly Review",
   "nodes": [
     {
-      "name": "Cron Sunday 18:00",
-      "type": "n8n-nodes-base.cron",
-      "parameters": { "triggerTimes": { "item": [{ "mode": "everyWeek", "weekday": "sunday", "hour": 18 }] } }
+      "name": "Schedule Sunday 18:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "parameters": { "rule": { "interval": [{ "field": "weeks", "triggerAtDay": [0], "triggerAtHour": 18 }] } }
     },
     {
       "name": "Query last week's notes",
@@ -15107,7 +15110,7 @@ jobs:
         Bovenstaande gaat alleen over <em>statische</em> hosting. Echte AI-apps hebben een backend (LLM-call, secret-management), een DB, vector-store. Hieronder een werkende combinatie die volledig binnen gratis tiers blijft tot ~10K MAU.
       </P>
       <Pre theme={theme} label="Stack: Cloudflare + Supabase + Anthropic">{`Frontend          Vercel/Cloudflare Pages (gratis, unlimited bandwidth)
-Backend           Cloudflare Workers (100k req/dag free, 10ms CPU per req)
+Backend           Cloudflare Workers (100k req/dag free; CPU-limiet ruim sinds 2024)
 Database          Supabase Postgres (500MB free, 50K MAU)
 Vector store      pgvector op Supabase (geen extra service)
 Auth              Supabase Auth (gratis, social-login built-in)
@@ -15149,13 +15152,13 @@ Build-volgorde:
 ─────────         ────────────────                          ──────────
 Vercel Hobby      100GB bandwidth, 1M func invokes         nee
 Cloudflare Pages  unlimited bandwidth + Workers 100k/d     nee
-Cloudflare Worker 100k req/dag, 10ms CPU per req           nee
+Cloudflare Worker 100k req/dag (CPU-limiet ruim sinds 2024)  nee
 Railway           $5 first month, daarna $1 credit         nee
 Render Free       750h/mo + spin-down 15min idle           ja (60s cold)
 Fly.io            geen free tier (nieuwe users 2025+)      n.v.t.
 Supabase          500MB Postgres, 2GB bandwidth, 50K MAU   nee
 Netlify           100GB bandwidth, 300 build-minutes       nee
-Hetzner CX11      €4.13/m → eigenlijk niet gratis, maar    nee
+Hetzner CX22      €4.59/m → eigenlijk niet gratis, maar    nee
                   goedkoopste echte VPS in EU/NL`}</Pre>
 
       <H2>Wanneer breekt gratis? (concrete thresholds)</H2>
@@ -17440,7 +17443,7 @@ function Exercises({ theme, exerciseProgress = {}, toggleExercise = () => {} }) 
 
       <Callout kind="tip">
         <p className={`text-sm ${theme.textMuted}`}>
-          <strong className={theme.text}>Mindset:</strong> 1 oefening per dag = 100 vaardigheden in een half jaar. De cumulatieve curve is groter dan je denkt. Begin klein, blijf consistent, deel je werk publiekelijk (LinkedIn, GitHub, blog) — dat versnelt alles.
+          <strong className={theme.text}>Mindset:</strong> 1 oefening per dag en je werkt in een paar weken álle 50+ opdrachten door — plus je eigen variaties erbovenop. De cumulatieve curve is groter dan je denkt. Begin klein, blijf consistent, deel je werk publiekelijk (LinkedIn, GitHub, blog) — dat versnelt alles.
         </p>
       </Callout>
 
@@ -17502,7 +17505,7 @@ function Exercises({ theme, exerciseProgress = {}, toggleExercise = () => {} }) 
 
       <Callout kind="success">
         <p className={`text-sm ${theme.textMuted}`}>
-          <strong className={theme.text}>Aanbevolen tempo:</strong> 1 oefening per werkdag, 6 maanden lang. Je hebt dan 130+ stuks gedaan. Gebruik een spreadsheet om bij te houden wat klaar is. Markeer ook welke oefening je opnieuw zou doen — dat zijn de oefeningen die nog beter gaan vastzitten.
+          <strong className={theme.text}>Aanbevolen tempo:</strong> 1 oefening per werkdag, ~2-3 maanden lang. Je werkt dan alle 50+ opdrachten door. Gebruik de checkboxes hierboven om bij te houden wat klaar is. Markeer ook welke oefening je opnieuw zou doen — dat zijn de oefeningen die nog beter gaan vastzitten.
         </p>
       </Callout>
     </div>
@@ -17530,7 +17533,7 @@ function StructuredOutputs({ theme }) {
           <p className={`text-sm ${theme.textMuted}`}>Definieer een fake-tool met je schema, model 'roept' het aan. Anthropic's officiële aanbeveling voor structured output. 99,9% schema-compliance.</p>
         </Card>
         <Card theme={theme} label="3. Native structured outputs" highlighted>
-          <p className={`text-sm ${theme.textMuted}`}>Header <InlineCode theme={theme}>anthropic-beta: structured-outputs-2025-11-13</InlineCode> + <InlineCode theme={theme}>output_schema</InlineCode>. Garandeert match. Sinds nov 2025 op Sonnet/Opus 4.x.</p>
+          <p className={`text-sm ${theme.textMuted}`}>GA via <InlineCode theme={theme}>output_config.format</InlineCode> (json_schema) op de Messages API. Garandeert schema-match. Werkt op Sonnet 4.5+/Opus 4.5+. Eén naam — zie Pattern 2 hieronder.</p>
         </Card>
       </div>
 
@@ -17576,7 +17579,7 @@ print(data["sentiment"], data["scores"]["confidence"])`}</Pre>
 
       <H2>Pattern 2 — Native structured outputs (GA)</H2>
       <P theme={theme}>
-        Sinds Q1 2026 algemeen beschikbaar via <InlineCode theme={theme}>output_config.format</InlineCode> op de Messages API. Werkt op Opus 4.5/4.6/4.7/4.8, Sonnet 4.5/4.6, Haiku 4.5. De Python/TypeScript/Ruby/PHP SDK's transformeren niet-ondersteunde JSON-Schema-constraints automatisch naar het runtime-equivalent.
+        Sinds Q1 2026 algemeen beschikbaar via <InlineCode theme={theme}>output_config.format</InlineCode> op de Messages API. Werkt op Opus 4.5/4.6/4.7, Sonnet 4.5/4.6 en Haiku 4.5. De Python/TypeScript/Ruby/PHP SDK's transformeren niet-ondersteunde JSON-Schema-constraints automatisch naar het runtime-equivalent.
       </P>
       <Pre theme={theme} label="Python · output_config.format (GA)">{`resp = client.messages.create(
     model="claude-sonnet-4-6",
@@ -17939,7 +17942,7 @@ function MultiAgent({ theme }) {
           <p className={`text-xs ${theme.textSubtle}`}>Beste voor: regulated industries (legal, finance) waar audit-trail moet.</p>
         </Card>
         <Card theme={theme} label="4. Swarm (decentralized)">
-          <p className={`text-sm ${theme.textMuted} mb-2`}>Agents praten direct met elkaar, geen lead. OpenAI Swarm-stijl.</p>
+          <p className={`text-sm ${theme.textMuted} mb-2`}>Agents praten direct met elkaar, geen lead. OpenAI Agents-SDK-stijl (opvolger van het gearchiveerde Swarm).</p>
           <p className={`text-xs ${theme.textSubtle}`}>Beste voor: prototype, brainstorm. Lastig debuggen in productie.</p>
         </Card>
       </div>
@@ -18066,23 +18069,27 @@ result = app.invoke({"task": "Vergelijk Pinecone vs Qdrant in 2026"})`}</Pre>
       <H2>Framework feature-matrix · mei 2026</H2>
       <Pre theme={theme}>{`Framework         Stars   Paradigma          Production-grade  HITL  Checkpoint  MCP
 ─────────         ─────   ─────────          ────────────────  ────  ──────────  ───
-LangGraph         12.8k   State machine     ✓ v0.4+           ✓     ✓ persistent ✓
-AutoGen           42k     Actor / chat      ✓ v0.4+           ✓     basic         ✗
-CrewAI            31k     Roles/Crew        ~ workflow only   ✓     ~             ~
-OpenAI Swarm      9k      Handoffs (light)  ✗ prototype       ✗     ✗             ✗
+(GitHub-stars: peildatum begin 2026, ~afgerond)
+LangGraph         ~13k    State machine     ✓ v0.4+           ✓     ✓ persistent ✓
+AutoGen           ~42k    Actor / chat      ✓ v0.4+           ✓     basic         ✗
+CrewAI            ~30k    Roles/Crew        ~ workflow only   ✓     ~             ~
+OpenAI Agents SDK ~?      Handoffs          ~ jong            ✓     ✗             ✗
 Claude Agent SDK  -       SDK first-class   ✓ v1              ✓     sessions API  ✓
 LlamaIndex AW     -       Event-driven      ~                 ✓     ✓             ✓
+
+Let op: OpenAI Swarm is GEARCHIVEERD — vervangen door de OpenAI Agents SDK.
+Gebruik Swarm niet meer voor nieuw werk.
 
 Keuze-flowchart:
  regulated industry + audit-trail   → LangGraph
  conversational, research-heavy      → AutoGen
  role-based business workflows       → CrewAI
  deep Anthropic stack + sub-agents   → Claude Agent SDK
- prototyping, leren                  → OpenAI Swarm`}</Pre>
+ OpenAI-stack, lichte handoffs       → OpenAI Agents SDK`}</Pre>
 
       <H2>Anti-pattern: wanneer single-agent wint</H2>
       <P theme={theme}>
-        Cognition's blogpost "Don't build multi-agents" (juni 2024) is in 2026 nog steeds canon: parallel <em>lezen</em> mag, parallel <em>schrijven</em> creëert race conditions die geen LLM-prompt fixt. Multi-agent is overkill als:
+        Cognition's blogpost "Don't build multi-agents" (2025) is in 2026 nog steeds canon: parallel <em>lezen</em> mag, parallel <em>schrijven</em> creëert race conditions die geen LLM-prompt fixt. Multi-agent is overkill als:
       </P>
       <ul className={`space-y-2 ${theme.textMuted} list-disc pl-5`}>
         <li>80% van runs hetzelfde 1-2 sub-agents gebruikt → collapse naar single-agent</li>
@@ -18171,7 +18178,7 @@ Datadog LLM    ─→ Voor wie al Datadog stack heeft. Enterprise-prijzen.`}</Pr
 
       <H2>OpenTelemetry GenAI — complete attribute-reference</H2>
       <P theme={theme}>
-        Sinds 2025 zijn de GenAI Semantic Conventions stabiel (v1.36+). Alle observability-tools praten dezelfde span-taal — switch tussen Langfuse/Phoenix/Datadog zonder rewrite. Voor experimental agent-attributes: <InlineCode theme={theme}>OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental</InlineCode>.
+        De GenAI Semantic Conventions zijn in beweging: de <strong className={theme.text}>chat/LLM-span-attributes</strong> zijn ver gevorderd richting stable, terwijl de <strong className={theme.text}>agent-attributes nog experimenteel</strong> zijn (begin 2026). Alle grote observability-tools praten al deze span-taal — switch tussen Langfuse/Phoenix/Datadog zonder rewrite. Voor de experimentele agent-attributes: <InlineCode theme={theme}>OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental</InlineCode>.
       </P>
       <Pre theme={theme} label="Stable client-attributes (LLM-call span)">{`# Request
 gen_ai.system                       = "anthropic"
@@ -19520,7 +19527,7 @@ function FineTuning({ theme }) {
 
       <H2>LoRA / QLoRA — de tools</H2>
       <P theme={theme}>
-        Full fine-tune van een 70B model: ~$50k op H100's. LoRA: ~$1500 op één RTX 4090 met QLoRA quantisatie. 80-90% van full fine-tune kwaliteit voor 3% van de kosten.
+        Schaal bepaalt alles. Een 8B-model QLoRA-fine-tunen kan op één RTX 4090 (24GB) voor ~$1.500 aan compute — dat is wat het code-voorbeeld hieronder doet. Een 70B-model past daar níet op (reken op 2× A100/H100, ~48GB+); een full fine-tune van 70B loopt richting tienduizenden dollars. De vuistregel: QLoRA op een klein model haalt 80-90% van full-fine-tune-kwaliteit voor een fractie van de kosten.
       </P>
       <Pre theme={theme} label="Python · QLoRA met Unsloth">{`from unsloth import FastLanguageModel
 from datasets import load_dataset

@@ -2,7 +2,7 @@
 {"input": "Wat is de default cache TTL bij Anthropic per mei 2026?", "expected": "5 minuten", "category": "factual"}
 {"input": "Welk MCP-transport is deprecated?", "expected": "SSE", "category": "factual"}
 {"input": "Wat staat #1 in de OWASP LLM Top-10?", "expected": "prompt injection", "category": "factual"}
-{"input": "Hoeveel hook-events zijn er in Claude Code v2.1.141?", "expected": "27", "category": "factual"}
+{"input": "In welk Claude Code hook-event vang je een mislukte tool-call op?", "expected": "PostToolUse", "category": "factual"}
 {"input": "Welk Anthropic-model is goedkoopst?", "expected": "Haiku", "category": "factual"}
 {"input": "Wat reduceert Contextual Retrieval volgens Anthropic-benchmark?", "expected": "67%", "category": "factual"}
 {"input": "Welke voice-provider heeft sub-90ms TTFB?", "expected": "Cartesia", "category": "factual"}
