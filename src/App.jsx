@@ -738,6 +738,19 @@ const Card = ({ children, theme, label, highlighted = false }) => (
 );
 
 // ============================================================
+//  PeildatumNote — eerlijke disclaimer bij speculatieve/bewegende cijfers
+//  (benchmarks, prijzen, salarissen, ARR, GitHub-stars, launch-datums).
+//  Eén plek voor de peildatum zodat we 'm centraal kunnen bijwerken.
+// ============================================================
+const PEILDATUM = "medio 2026";
+const PeildatumNote = ({ theme, children }) => (
+  <div className={`my-4 flex items-start gap-2 text-xs ${theme.textSubtle} italic print:hidden`}>
+    <TrendingUp className="w-3.5 h-3.5 mt-0.5 shrink-0 opacity-70" />
+    <span>{children || `Gerapporteerde cijfers, peildatum ${PEILDATUM}. Benchmarks, prijzen en marktdata verschuiven snel — verifieer bij de bron voordat je er beslissingen op baseert.`}</span>
+  </div>
+);
+
+// ============================================================
 //  VideoEmbed — walkthrough-video bovenaan een module
 //  video = { url, duration, provider } — leeg = niets gerenderd
 //  Ondersteunt: youtube, vimeo, loom, cloudflare-stream, direct mp4
@@ -2796,6 +2809,9 @@ Beter elke dag 30 min dan één weekend per maand 8u.`}</Pre>
       <P theme={theme}>
         In <strong className={theme.text}>Nederland</strong> liggen de getallen lager maar comfortabel: junior €55-70K, mid €70-95K, senior €95-130K+. Amsterdam zit gemiddeld 28% boven het nationaal mediaan (€109K vs €85K). ASML, NXP en Philips betalen in Eindhoven aan de bovenkant; Booking.com en Adyen in Amsterdam matchen dat met betere equity. Top-tier total comp in NL bij scale-ups loopt richting €150-175K voor senior AI engineers.
       </P>
+      <PeildatumNote theme={theme}>
+        Salariscijfers zijn samengevoegde rapportages (Levels.fyi, Glassdoor, techpays e.a.), peildatum {PEILDATUM}. Bedragen lopen sterk uiteen per bedrijf, ervaring en onderhandeling — gebruik ze als bandbreedte, niet als belofte.
+      </PeildatumNote>
 
       <H2>Specialisaties die ertoe doen — en eentje die verdwijnt</H2>
       <P theme={theme}>
@@ -3177,6 +3193,9 @@ Tips NL-specifiek:
   - DGA via holding-B.V. voor consultancy
   - Pension is veel zwakker dan VS — investeer privé
   - Equity in NL-startups: lagere caps maar minder tax-friendly`}</Pre>
+      <PeildatumNote theme={theme}>
+        Bandbreedtes en bronnen hierboven hebben peildatum {PEILDATUM}. Belastingregels (30%-regeling, DGA) en marktniveaus wijzigen — verifieer bij een fiscalist en actuele salaris-trackers voor je onderhandelt.
+      </PeildatumNote>
     </div>
   );
 }
@@ -3663,6 +3682,9 @@ Top hallucination-rates (HalluLens benchmark, ACL 2025):
 
 Vuistregel: extrinsiek > intrinsiek qua frequentie.
             Beide nemen drastisch af bij T=0 + RAG-grounding + refusal-as-field.`}</Pre>
+      <PeildatumNote theme={theme}>
+        De HalluLens-percentages zijn gerapporteerd (peildatum {PEILDATUM}) en variëren sterk per benchmark-versie en meetmethode. Behandel ze als illustratie van de rangorde (Opus &lt; Sonnet &lt; Haiku qua hallucinatie), niet als exacte cijfers.
+      </PeildatumNote>
 
       <H2>Knowledge cutoff per Claude-model (mei 2026)</H2>
       <Pre theme={theme}>{`Model              Reliable cutoff   Training cutoff   Notes
@@ -3957,6 +3979,9 @@ AIME 2025 (wiskunde-olympiade)
       <P theme={theme}>
         Interpretatie: Claude domineert in agentisch coderen (SWE-bench Verified/Pro, Aider) en computer use (OSWorld). Voor pure feitelijke recall is Claude niet de winnaar. Voor wiskunde onder tijdsdruk loopt Claude achter.
       </P>
+      <PeildatumNote theme={theme}>
+        Benchmark-scores en concurrent-modellen (GPT-5.x, Gemini 3.x) zijn gerapporteerde cijfers met peildatum {PEILDATUM}; modellen en ranglijsten veranderen per maand. Gebruik deze als grootte-orde, niet als actuele waarheid — en run altijd je eigen golden set (zie de realiteitscheck hierboven).
+      </PeildatumNote>
 
       <H2>Adaptive Thinking: het einde van budget_tokens</H2>
       <P theme={theme}>
@@ -4382,6 +4407,9 @@ messages.create(
           <strong className={theme.text}>Gotcha: cache-breakpoint 20-block lookback limit.</strong> Een cache-breakpoint matcht alleen tegen de laatste 20 content-blocks. In lange agent-loops met veel tool_results valt je oorspronkelijke head-breakpoint na ~20 rondes uit beeld → cache-miss op iets dat hetzelfde lijkt. Veel productiebugs daar. <strong className={theme.text}>Mitigatie:</strong> re-add cache_control op de head na elke compaction-ronde, of gebruik <InlineCode theme={theme}>cache_control={`{"type": "auto"}`}</InlineCode> die dat zelf bijhoudt. <strong className={theme.text}>Debug:</strong> kijk naar <InlineCode theme={theme}>usage.cache_read_input_tokens</InlineCode> per call — als die plots crasht halverwege je agent-run is dit de oorzaak.
         </P>
       </Callout>
+      <PeildatumNote theme={theme}>
+        De top-level <code>cache_control=&#123;"type": "auto"&#125;</code>-toggle is hier beschreven met peildatum {PEILDATUM} en is niet in alle SDK-versies bevestigd. De gegarandeerd gedocumenteerde manier blijft per-block <code>&#123;"type": "ephemeral"&#125;</code>. Verifieer "auto" tegen de actuele docs voordat je erop bouwt; valt het niet te zetten, gebruik dan expliciete ephemeral-breakpoints.
+      </PeildatumNote>
 
       <H2>Token-budgeten per use case</H2>
       <Pre theme={theme}>{`Classificatie       100-1000 input + 10-50 output tokens
@@ -11167,7 +11195,7 @@ Web       WebMCP    Browsers en webapps exposen tools voor agents`}</Pre>
         Concrete cijfers en bewegingen in 2026:
       </P>
       <ul className={`space-y-2 ${theme.textMuted} text-sm list-none`}>
-        <li>• <strong className={theme.text}>Claude Code</strong> met Opus 4.7 scoort 80.8% op SWE-bench Verified en is in begin 2026 hernoemd naar "Claude Agent SDK" voor de programmeerbare laag eronder.</li>
+        <li>• <strong className={theme.text}>Claude Code</strong> met Opus 4.7 scoort 87.6% op SWE-bench Verified (Opus 4.6 zat op 80.8%) en is in begin 2026 hernoemd naar "Claude Agent SDK" voor de programmeerbare laag eronder.</li>
         <li>• <strong className={theme.text}>Cursor</strong> prijst Pro+ op $60/mnd en Ultra op $200/mnd; de meest gebruikte combo onder professionele devs is Cursor voor daily editing + Claude Code voor zware refactors.</li>
         <li>• <strong className={theme.text}>Devin</strong> (Cognition) is in talks voor een ronde op $25 miljard valuation (april 2026) na strategische deals met Cognizant en Infosys.</li>
         <li>• <strong className={theme.text}>Manus</strong> (Butterfly Effect, China/Singapore) claimt 89% op de GAIA benchmark, draait onder de motorkap op Claude Sonnet en fine-tuned Qwen.</li>
@@ -11213,6 +11241,9 @@ Web       WebMCP    Browsers en webapps exposen tools voor agents`}</Pre>
         <li>• 230.000 actieve gebruikers wereldwijd, +141% YoY</li>
         <li>• 183.000+ GitHub stars — #1 op de 2025 JavaScript Rising Stars</li>
       </ul>
+      <PeildatumNote theme={theme}>
+        ARR, funding, gebruikersaantallen en GitHub-stars zijn gerapporteerd, peildatum {PEILDATUM}. Dit soort groeicijfers veroudert in maanden — check de bron voor actuele aantallen.
+      </PeildatumNote>
       <P theme={theme}>
         Waarom n8n won: het was de enige open-source workflow-tool die <strong className={theme.text}>vroeg en serieus op LLM-nodes en agent-orchestratie</strong> inzette, terwijl Zapier en Make te traag pivotten en Inngest een meer developer-niche bediende.
       </P>
@@ -14335,6 +14366,9 @@ POST /v1/sessions/{id}/webhooks   Configureer webhook-callbacks
 
 Pricing: tokens (zoals normale API) + $0.08 per session-uur
          + cloud-egress als je sandbox het web op moet`}</Pre>
+      <PeildatumNote theme={theme}>
+        Managed Agents is bij peildatum {PEILDATUM} beta — endpoints, het $0,08/sessie-uur-tarief en de genoemde klanten (Notion, Rakuten, Sentry, Asana) zijn gerapporteerd en kunnen vóór GA veranderen. Check de officiële docs en je Console-facturatie voor de actuele cijfers.
+      </PeildatumNote>
       <Pre theme={theme} label="Python · minimale Managed Agent">{`from anthropic import Anthropic
 client = Anthropic()
 
@@ -18815,6 +18849,9 @@ Met native S2S (OpenAI Realtime):          ~300-500ms`}</Pre>
         <li><strong className={theme.text}>Retentie</strong>: audio max 12 mnd, transcripts (PII-geredacteerd via Presidio) max 24 mnd, voiceprints alleen met expliciete consent + revoke-flow.</li>
         <li><strong className={theme.text}>2025 enforcement</strong>: 213 EU DPA-acties, €147M boetes specifiek voor call-recording-violations. Autoriteit Persoonsgegevens NL actief.</li>
       </ul>
+      <PeildatumNote theme={theme}>
+        Handhavings- en boetecijfers zijn gerapporteerd (peildatum {PEILDATUM}) en geen juridisch advies. Wet- en regelgeving rond opname en consent verschilt per land en wijzigt — raadpleeg een jurist voor je eigen situatie.
+      </PeildatumNote>
 
       <H2>Voice agent eval — vier metrics</H2>
       <Pre theme={theme}>{`1. WER (Word Error Rate) op transcript
