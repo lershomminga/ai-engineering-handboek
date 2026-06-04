@@ -53,10 +53,20 @@ Voice barge-in-sectie: AFGEROND (juni 2026) — "Barge-in: de gebruiker mag je
 onderbreken" in de Voice-module (detectie/stop/cancel/context-truncate + code +
 echo-cancellatie + backchannel-tuning).
 
-**Nog te doen (laatste audit-item):** ClaudeDeep herschrijven rond denk-shifts
-(substantiële content-herstructurering van één module). Dit is het énige
-resterende item uit het hele audit-plan. Centrale feiten-tabel: gedeprioriteerd
-(canon staat al in TokensContext + Glossary).
+ClaudeDeep denk-shifts: AFGEROND (juni 2026) — additieve "De vier denk-omslagen"-
+opening bovenaan de module (kernrealisatie-callout + 4 shift-cards + tie-in),
+product-landschap behouden als naslag. Gekozen aanpak: additief (niet full rewrite).
+
+## HET HELE AUDIT-PLAN IS AFGEROND ✅
+
+Fase 1 (correctheid) · Fase 2 (coherentie) · Fase 3 (didactiek: rekentools +
+Voice barge-in + ClaudeDeep denk-shifts) · Fase 4 (Categorie-E peildatum-
+disclaimers + feitelijke fixes) — allemaal uitgevoerd, gebouwd, live-geverifieerd
+en gepusht. Geen openstaande audit-items meer. Centrale feiten-tabel bewust
+gedeprioriteerd (canon staat al in TokensContext + Glossary).
+
+Onderweg gevonden + gefixt: een crash die de hele Deployment-module sloopte
+(`gen_ai is not defined`, build ving het niet) + smoke-test van alle 44 modules.
 
 ## Educatieve diepte-laag (toegevoegd juni 2026)
 
