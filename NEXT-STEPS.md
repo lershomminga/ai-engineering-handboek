@@ -39,10 +39,19 @@ Volledig audit-rapport: `STUDIEBOEK-AUDIT.md`. Fase 1 (4 blokken) uitgevoerd + g
 - **Smoke-test:** alle 44 modules in de browser gecheckt — allemaal renderen,
   geen lege/gecrashte modules, console schoon. (Methode: hash-sweep + main-len/heads.)
 
-**Nog te doen Fase 3-4:** ClaudeDeep herschrijven rond denk-shifts, Voice
-barge-in-sectie. Categorie-E speculatieve cijfers (benchmarks, salarissen, ROI,
-waarderingen) nog van "gerapporteerd/peildatum"-disclaimers voorzien. Centrale
-feiten-tabel: gedeprioriteerd (canon staat al in TokensContext + Glossary).
+## Studieboek-audit Fase 4 (Categorie E + feiten) — AFGEROND juni 2026
+
+- Nieuw `PeildatumNote`-component (centrale `PEILDATUM`-constante) bij alle
+  speculatieve cijfer-clusters: ClaudeModels-benchmarks, Fundamentals HalluLens,
+  Roadmap-salarissen (2×), Ecosystem n8n-stats, ClaudeCloud Managed Agents,
+  Voice-boetes, TokensContext cache "auto"-toggle.
+- Feitelijke fixes: Ecosystem 80.8%→87.6% SWE-bench (consistent met ClaudeModels);
+  cache_control "auto" gemarkeerd als niet-gegarandeerd (alleen "ephemeral" gedoc.).
+- MultiAgent framework-stars hadden al inline-disclaimer.
+
+**Nog te doen (laatste Fase 3-rest):** ClaudeDeep herschrijven rond denk-shifts,
+Voice barge-in-sectie. Dit zijn de enige resterende items uit het hele audit-plan.
+Centrale feiten-tabel: gedeprioriteerd (canon staat al in TokensContext + Glossary).
 
 ## Educatieve diepte-laag (toegevoegd juni 2026)
 
