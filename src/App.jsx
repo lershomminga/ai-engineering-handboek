@@ -977,6 +977,262 @@ function CostWidget({ theme }) {
   );
 }
 
+// 4. Cache break-even — wanneer verdient prompt caching zichzelf terug?
+//    Write = 1,25× input-prijs, read = 0,10×. Break-even al vanaf 2 hergebruik-calls.
+function CacheBreakEvenWidget({ theme }) {
+  const [model, setModel] = useState("claude-sonnet-4-6");
+  const [prefix, setPrefix] = useState(4000);
+  const [calls, setCalls] = useState(10);
+
+  const m = COST_MODELS[model];
+  const noCache = (prefix * m.in / 1e6) * calls;
+  const writeCost = prefix * m.in * 1.25 / 1e6;
+  const readCost = prefix * m.in * 0.10 / 1e6;
+  const withCache = writeCost + readCost * Math.max(0, calls - 1);
+  const savings = noCache > 0 ? (1 - withCache / noCache) * 100 : 0;
+  const tooSmall = prefix < 1024;
+
+  const fmt = n => n < 1 ? `$${n.toFixed(4)}` : `$${n.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
+
+  return (
+    <Widget theme={theme} label="Cache break-even" hint="Cache-write kost 1,25× de normale input-prijs, elke read 0,10×. Vanaf de 2e hergebruik-call binnen de TTL (5 min default) ben je goedkoper uit. De cachebare prefix moet ≥1024 tokens zijn.">
+      <div className="grid sm:grid-cols-3 gap-3 mb-4">
+        <label className="text-sm">
+          <span className={`block ${theme.textSubtle} mb-1`}>Model</span>
+          <select value={model} onChange={(e) => setModel(e.target.value)} className={`w-full p-2 rounded ${theme.input} border text-sm`}>
+            {Object.entries(COST_MODELS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+          </select>
+        </label>
+        <label className="text-sm">
+          <span className={`block ${theme.textSubtle} mb-1`}>Cachebare prefix (tokens)</span>
+          <input type="number" value={prefix} onChange={(e) => setPrefix(Math.max(0, +e.target.value))} className={`w-full p-2 rounded ${theme.input} border text-sm`} />
+        </label>
+        <label className="text-sm">
+          <span className={`block ${theme.textSubtle} mb-1`}>Calls / TTL-venster: {calls}</span>
+          <input type="range" min="1" max="100" step="1" value={calls} onChange={(e) => setCalls(+e.target.value)} className="w-full accent-orange-500 mt-2" />
+        </label>
+      </div>
+      <div className={`grid grid-cols-3 gap-2 p-3 rounded-lg ${theme.bgSoft}`}>
+        <div><div className={`text-xs ${theme.textSubtle}`}>zonder cache</div><div className={`font-mono font-semibold ${theme.text}`}>{fmt(noCache)}</div></div>
+        <div><div className={`text-xs ${theme.textSubtle}`}>mét cache</div><div className={`font-mono font-semibold ${theme.text}`}>{fmt(withCache)}</div></div>
+        <div><div className={`text-xs ${theme.textSubtle}`}>besparing</div><div className={`font-mono font-semibold text-xl ${savings > 0 ? theme.accentText : theme.textSubtle}`}>{savings > 0 ? `${savings.toFixed(0)}%` : "—"}</div></div>
+      </div>
+      <p className={`text-xs ${theme.textSubtle} mt-3`}>
+        Break-even ligt bij <strong className={theme.text}>2 calls</strong>: één write + één read is al goedkoper dan twee volle calls. {calls === 1 && "Bij 1 call betaal je alleen de write (1,25×) — dan is caching duurder."}
+      </p>
+      {tooSmall && (
+        <p className={`text-xs mt-2 ${theme.accentText}`}>
+          ⚠ Prefix &lt; 1024 tokens — te klein om te cachen. Verhoog naar minstens 1024.
+        </p>
+      )}
+    </Widget>
+  );
+}
+
+// 5. Model-router — blended kosten bij verkeer-split over Haiku/Sonnet/Opus.
+function ModelRouterWidget({ theme }) {
+  const [reqPerDay, setReqPerDay] = useState(10000);
+  const [inTok, setInTok] = useState(1500);
+  const [outTok, setOutTok] = useState(400);
+  const [pctHaiku, setPctHaiku] = useState(75);
+  const [pctSonnet, setPctSonnet] = useState(20);
+
+  const pctOpus = Math.max(0, 100 - pctHaiku - pctSonnet);
+  const over = pctHaiku + pctSonnet > 100;
+
+  const costPerReq = (mdl) => {
+    const m = COST_MODELS[mdl];
+    return (inTok * m.in + outTok * m.out) / 1e6;
+  };
+  const cH = costPerReq("claude-haiku-4-5");
+  const cS = costPerReq("claude-sonnet-4-6");
+  const cO = costPerReq("claude-opus-4-7");
+
+  const monthly = (perReq) => perReq * reqPerDay * 30;
+  const blendedPerReq = over ? null : (cH * pctHaiku + cS * pctSonnet + cO * pctOpus) / 100;
+  const blended = blendedPerReq == null ? 0 : monthly(blendedPerReq);
+  const allSonnet = monthly(cS);
+  const allOpus = monthly(cO);
+  const vsSonnet = allSonnet > 0 ? (1 - blended / allSonnet) * 100 : 0;
+  const vsOpus = allOpus > 0 ? (1 - blended / allOpus) * 100 : 0;
+
+  const fmt = n => `$${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+
+  return (
+    <Widget theme={theme} label="Model-router" hint="Een Haiku-classifier stuurt simpele calls naar Haiku, complexe naar Sonnet/Opus. Hier zie je de blended maandrekening versus 'Sonnet-overal' en 'Opus-overal'.">
+      <div className="grid sm:grid-cols-3 gap-3 mb-4">
+        <label className="text-sm">
+          <span className={`block ${theme.textSubtle} mb-1`}>Requests / dag</span>
+          <input type="number" value={reqPerDay} onChange={(e) => setReqPerDay(Math.max(0, +e.target.value))} className={`w-full p-2 rounded ${theme.input} border text-sm`} />
+        </label>
+        <label className="text-sm">
+          <span className={`block ${theme.textSubtle} mb-1`}>Input tokens / req</span>
+          <input type="number" value={inTok} onChange={(e) => setInTok(Math.max(0, +e.target.value))} className={`w-full p-2 rounded ${theme.input} border text-sm`} />
+        </label>
+        <label className="text-sm">
+          <span className={`block ${theme.textSubtle} mb-1`}>Output tokens / req</span>
+          <input type="number" value={outTok} onChange={(e) => setOutTok(Math.max(0, +e.target.value))} className={`w-full p-2 rounded ${theme.input} border text-sm`} />
+        </label>
+      </div>
+      <div className="space-y-3 mb-4">
+        <label className="text-sm block">
+          <span className={`block ${theme.textSubtle} mb-1`}>→ Haiku: {pctHaiku}%</span>
+          <input type="range" min="0" max="100" step="5" value={pctHaiku} onChange={(e) => setPctHaiku(+e.target.value)} className="w-full accent-orange-500" />
+        </label>
+        <label className="text-sm block">
+          <span className={`block ${theme.textSubtle} mb-1`}>→ Sonnet: {pctSonnet}%</span>
+          <input type="range" min="0" max="100" step="5" value={pctSonnet} onChange={(e) => setPctSonnet(+e.target.value)} className="w-full accent-orange-500" />
+        </label>
+        <div className={`text-sm ${theme.textSubtle}`}>→ Opus (rest): <strong className={over ? theme.accentText : theme.text}>{over ? "ongeldig" : `${pctOpus}%`}</strong></div>
+      </div>
+      {over ? (
+        <p className={`text-xs ${theme.accentText}`}>⚠ Haiku + Sonnet is meer dan 100%. Verlaag een van beide.</p>
+      ) : (
+        <>
+          <div className={`grid grid-cols-3 gap-2 p-3 rounded-lg ${theme.bgSoft}`}>
+            <div><div className={`text-xs ${theme.textSubtle}`}>blended / maand</div><div className={`font-mono font-semibold text-xl ${theme.accentText}`}>{fmt(blended)}</div></div>
+            <div><div className={`text-xs ${theme.textSubtle}`}>Sonnet-overal</div><div className={`font-mono font-semibold ${theme.text}`}>{fmt(allSonnet)}</div></div>
+            <div><div className={`text-xs ${theme.textSubtle}`}>Opus-overal</div><div className={`font-mono font-semibold ${theme.text}`}>{fmt(allOpus)}</div></div>
+          </div>
+          <p className={`text-xs ${theme.textSubtle} mt-3`}>
+            Bespaart <strong className={theme.text}>{vsSonnet.toFixed(0)}%</strong> t.o.v. Sonnet-overal en <strong className={theme.text}>{vsOpus.toFixed(0)}%</strong> t.o.v. Opus-overal. Reken de extra Haiku-classifier-call (~1 goedkope call per request) mee bij hoge precisie-eisen.
+          </p>
+        </>
+      )}
+    </Widget>
+  );
+}
+
+// 6. ROI-calculator — verdient de AI-feature zichzelf terug? (waarde vs kosten/maand)
+function RoiWidget({ theme }) {
+  const [users, setUsers] = useState(20);
+  const [hoursPerWeek, setHoursPerWeek] = useState(3);
+  const [rate, setRate] = useState(50);
+  const [apiCost, setApiCost] = useState(200);
+  const [buildCost, setBuildCost] = useState(150);
+
+  const valueMonth = users * hoursPerWeek * 4.33 * rate;
+  const costMonth = apiCost + buildCost;
+  const net = valueMonth - costMonth;
+  const roi = costMonth > 0 ? (net / costMonth) * 100 : 0;
+
+  const fmt = n => `€${Math.round(n).toLocaleString("nl-NL")}`;
+
+  return (
+    <Widget theme={theme} label="ROI-calculator" hint="Tijdsbesparing × uurtarief = bruto waarde/maand. Daar trek je API- + bouw/hosting-kosten vanaf. Vul de AI-kosten in euro's in (reken $→€ even om). Bedragen zijn jouw aannames, geen garantie.">
+      <div className="grid sm:grid-cols-2 gap-3 mb-4">
+        <label className="text-sm">
+          <span className={`block ${theme.textSubtle} mb-1`}>Aantal gebruikers</span>
+          <input type="number" value={users} onChange={(e) => setUsers(Math.max(0, +e.target.value))} className={`w-full p-2 rounded ${theme.input} border text-sm`} />
+        </label>
+        <label className="text-sm">
+          <span className={`block ${theme.textSubtle} mb-1`}>Uur bespaard / week / gebruiker</span>
+          <input type="number" step="0.5" value={hoursPerWeek} onChange={(e) => setHoursPerWeek(Math.max(0, +e.target.value))} className={`w-full p-2 rounded ${theme.input} border text-sm`} />
+        </label>
+        <label className="text-sm">
+          <span className={`block ${theme.textSubtle} mb-1`}>Uurtarief (€)</span>
+          <input type="number" value={rate} onChange={(e) => setRate(Math.max(0, +e.target.value))} className={`w-full p-2 rounded ${theme.input} border text-sm`} />
+        </label>
+        <label className="text-sm">
+          <span className={`block ${theme.textSubtle} mb-1`}>AI-kosten / maand (€)</span>
+          <input type="number" value={apiCost} onChange={(e) => setApiCost(Math.max(0, +e.target.value))} className={`w-full p-2 rounded ${theme.input} border text-sm`} />
+        </label>
+        <label className="text-sm">
+          <span className={`block ${theme.textSubtle} mb-1`}>Bouw/hosting / maand (€)</span>
+          <input type="number" value={buildCost} onChange={(e) => setBuildCost(Math.max(0, +e.target.value))} className={`w-full p-2 rounded ${theme.input} border text-sm`} />
+        </label>
+      </div>
+      <div className={`grid grid-cols-3 gap-2 p-3 rounded-lg ${theme.bgSoft}`}>
+        <div><div className={`text-xs ${theme.textSubtle}`}>waarde / maand</div><div className={`font-mono font-semibold ${theme.text}`}>{fmt(valueMonth)}</div></div>
+        <div><div className={`text-xs ${theme.textSubtle}`}>netto / maand</div><div className={`font-mono font-semibold ${net >= 0 ? theme.text : "text-red-500"}`}>{fmt(net)}</div></div>
+        <div><div className={`text-xs ${theme.textSubtle}`}>ROI</div><div className={`font-mono font-semibold text-xl ${roi >= 0 ? theme.accentText : "text-red-500"}`}>{roi >= 0 ? `${roi.toFixed(0)}%` : `${roi.toFixed(0)}%`}</div></div>
+      </div>
+      <p className={`text-xs ${theme.textSubtle} mt-3`}>
+        Vuistregel: een interne tool met ROI &lt; 100% is zelden de bouw- en onderhoudslast waard. Tel verborgen kosten mee (jouw tijd, model-upgrades, support).
+      </p>
+    </Widget>
+  );
+}
+
+// 7. Latency-budget — verdeel een ms-budget over RAG, model-TTFT, generatie en tools.
+//    TTFT en tokens/sec zijn benaderingen (grootte-ordes), geen gegarandeerde SLA's.
+const LATENCY_MODELS = {
+  "claude-haiku-4-5": { ttft: 400, tps: 110, label: "Haiku 4.5" },
+  "claude-sonnet-4-6": { ttft: 800, tps: 65, label: "Sonnet 4.6" },
+  "claude-opus-4-7": { ttft: 1200, tps: 45, label: "Opus 4.7" },
+};
+function LatencyBudgetWidget({ theme }) {
+  const [budget, setBudget] = useState(3000);
+  const [model, setModel] = useState("claude-sonnet-4-6");
+  const [retrieval, setRetrieval] = useState(300);
+  const [outTok, setOutTok] = useState(300);
+  const [toolCalls, setToolCalls] = useState(1);
+  const [toolMs, setToolMs] = useState(250);
+
+  const m = LATENCY_MODELS[model];
+  const genMs = (outTok / m.tps) * 1000;
+  const toolsMs = toolCalls * toolMs;
+  const total = retrieval + m.ttft + genMs + toolsMs;
+  const over = total > budget;
+
+  const segs = [
+    { label: "RAG retrieval", ms: retrieval, cls: "bg-sky-500" },
+    { label: "Model TTFT", ms: m.ttft, cls: "bg-orange-500" },
+    { label: "Generatie", ms: genMs, cls: "bg-emerald-500" },
+    { label: "Tools", ms: toolsMs, cls: "bg-purple-500" },
+  ];
+  const scaleMax = Math.max(total, budget);
+
+  return (
+    <Widget theme={theme} label="Latency-budget" hint="TTFT en tokens/sec zijn benaderingen (grootte-ordes uit publieke metingen), geen gegarandeerde SLA's — meet je eigen p50/p95. De les: bij streaming voelt TTFT als 'de wachttijd', generatie loopt daarna door.">
+      <div className="grid sm:grid-cols-3 gap-3 mb-4">
+        <label className="text-sm">
+          <span className={`block ${theme.textSubtle} mb-1`}>Budget (ms): {budget}</span>
+          <input type="range" min="500" max="8000" step="100" value={budget} onChange={(e) => setBudget(+e.target.value)} className="w-full accent-orange-500 mt-2" />
+        </label>
+        <label className="text-sm">
+          <span className={`block ${theme.textSubtle} mb-1`}>Model</span>
+          <select value={model} onChange={(e) => setModel(e.target.value)} className={`w-full p-2 rounded ${theme.input} border text-sm`}>
+            {Object.entries(LATENCY_MODELS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+          </select>
+        </label>
+        <label className="text-sm">
+          <span className={`block ${theme.textSubtle} mb-1`}>Output tokens</span>
+          <input type="number" value={outTok} onChange={(e) => setOutTok(Math.max(0, +e.target.value))} className={`w-full p-2 rounded ${theme.input} border text-sm`} />
+        </label>
+        <label className="text-sm">
+          <span className={`block ${theme.textSubtle} mb-1`}>RAG retrieval (ms)</span>
+          <input type="number" value={retrieval} onChange={(e) => setRetrieval(Math.max(0, +e.target.value))} className={`w-full p-2 rounded ${theme.input} border text-sm`} />
+        </label>
+        <label className="text-sm">
+          <span className={`block ${theme.textSubtle} mb-1`}>Tool-calls</span>
+          <input type="number" value={toolCalls} onChange={(e) => setToolCalls(Math.max(0, +e.target.value))} className={`w-full p-2 rounded ${theme.input} border text-sm`} />
+        </label>
+        <label className="text-sm">
+          <span className={`block ${theme.textSubtle} mb-1`}>ms / tool-call</span>
+          <input type="number" value={toolMs} onChange={(e) => setToolMs(Math.max(0, +e.target.value))} className={`w-full p-2 rounded ${theme.input} border text-sm`} />
+        </label>
+      </div>
+      <div className="flex w-full h-5 rounded overflow-hidden mb-2 border border-black/10">
+        {segs.map(s => s.ms > 0 && (
+          <div key={s.label} className={`${s.cls} h-full`} style={{ width: `${(s.ms / scaleMax) * 100}%` }} title={`${s.label}: ${Math.round(s.ms)}ms`} />
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-x-4 gap-y-1 mb-3">
+        {segs.map(s => (
+          <span key={s.label} className={`text-xs ${theme.textSubtle} flex items-center gap-1`}>
+            <span className={`inline-block w-2.5 h-2.5 rounded-sm ${s.cls}`} />{s.label}: {Math.round(s.ms)}ms
+          </span>
+        ))}
+      </div>
+      <div className={`flex items-center justify-between p-3 rounded-lg ${theme.bgSoft}`}>
+        <div><span className={`text-xs ${theme.textSubtle}`}>totaal</span> <span className={`font-mono font-semibold text-lg ${over ? "text-red-500" : theme.accentText}`}>{Math.round(total)}ms</span></div>
+        <div className={`text-sm font-semibold ${over ? "text-red-500" : "text-emerald-500"}`}>{over ? `${Math.round(total - budget)}ms over budget` : `${Math.round(budget - total)}ms speling`}</div>
+      </div>
+    </Widget>
+  );
+}
+
 // ============================================================
 //  Quiz-data — per module 3 multiple-choice vragen
 // ============================================================
@@ -10391,6 +10647,12 @@ Eigen VPS          systemd timers of crontab`}</Pre>
         <li>• <strong className={theme.text}>Datadog LLM Observability</strong> — voor enterprise-stacks</li>
       </ul>
 
+      <H3>Latency-budget verdelen</H3>
+      <P theme={theme}>
+        "Snel genoeg" is een budget dat je verdeelt over RAG-retrieval, model-TTFT, generatie en tool-calls. Schuif aan de knoppen en zie waar je ms naartoe gaan — en of je onder je doel blijft:
+      </P>
+      <LatencyBudgetWidget theme={theme} />
+
       <H2>Kosten beheersen</H2>
       <Pre theme={theme}>{`Tactiek                        Besparing      Hoe
 -----------------------------  -------------  -----------------------------
@@ -10461,7 +10723,7 @@ Schaduw-deploys                check          A/B nieuwe prompt zonder users te 
         OpenTelemetry (OTel) is bezig met het standaardiseren van semantic conventions voor GenAI. Het idee: ongeacht welk SDK of welke provider je gebruikt, de span-attributen heten hetzelfde. Dat maakt tooling vendor-onafhankelijk.
       </P>
       <P theme={theme}>
-        <strong className={theme.text}>Span-naam conventie:</strong> <InlineCode theme={theme}>{`{gen_ai.operation.name} {gen_ai.request.model}`}</InlineCode>, bijvoorbeeld "chat claude-sonnet-4-6" of "embeddings text-embedding-3-large". Voor agents wordt het "invoke_agent {gen_ai.agent.name}".
+        <strong className={theme.text}>Span-naam conventie:</strong> <InlineCode theme={theme}>{`{gen_ai.operation.name} {gen_ai.request.model}`}</InlineCode>, bijvoorbeeld "chat claude-sonnet-4-6" of "embeddings text-embedding-3-large". Voor agents wordt het <InlineCode theme={theme}>{`invoke_agent {gen_ai.agent.name}`}</InlineCode>.
       </P>
       <Pre theme={theme} label="Verplichte/aanbevolen attributen op een chat-span">{`gen_ai.operation.name      = "chat"
 gen_ai.system              = "anthropic"
@@ -15751,6 +16013,8 @@ function CostOpt({ theme }) {
 # Eerste call:  cache write     (1.25x normale prijs)
 # Volgende:     cache read      (0.10x normale prijs)
 # Break-even:   na ~2 calls`}</Pre>
+      <P theme={theme}>Reken na vanaf welk hergebruik caching zich terugverdient:</P>
+      <CacheBreakEvenWidget theme={theme} />
       <Pre theme={theme} label="Smart routing pattern">{`def smart_route(query):
     classification = haiku.classify(
         query,
@@ -15764,6 +16028,8 @@ function CostOpt({ theme }) {
         return opus.answer(query)         # $5/$25 per M
 
 # Resultaat: gemiddelde kosten gedeeld door 3-10.`}</Pre>
+      <P theme={theme}>Schuif met de verkeer-verdeling en zie de blended maandrekening:</P>
+      <ModelRouterWidget theme={theme} />
 
       <H2>Tactiek: meet eerst, optimaliseer dan</H2>
       <Pre theme={theme}>{`Stap 1: log per call
@@ -15799,6 +16065,12 @@ Na:
   Kosten: ~€110/mo
 
 Winst: 83% bij gelijke kwaliteit.`}</Pre>
+
+      <H2>Verdient het zichzelf terug? — ROI</H2>
+      <P theme={theme}>
+        Kosten drukken is de helft van het verhaal; de andere helft is of de feature überhaupt waarde oplevert. Reken je eigen business case door — tijdsbesparing tegenover maandkosten:
+      </P>
+      <RoiWidget theme={theme} />
 
       <H2>Hidden costs — vijf stille killers</H2>
       <P theme={theme}>
