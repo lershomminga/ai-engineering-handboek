@@ -28,11 +28,21 @@ Volledig audit-rapport: `STUDIEBOEK-AUDIT.md`. Fase 1 (4 blokken) uitgevoerd + g
 - Blok D: Deployment-module ontdubbeld (ondiepe Monitoring/Kosten/Veiligheid weg,
   diepere versies behouden, prompt-injection-Callout verplaatst)
 
-**Nog te doen uit audit (Fase 3-4):** nieuwe rekentools (ROI/router/cache/latency),
-ClaudeDeep herschrijven rond denk-shifts, Voice barge-in-sectie. Categorie-E
-speculatieve cijfers (benchmarks, salarissen, ROI, waarderingen) nog van
-"gerapporteerd/peildatum"-disclaimers voorzien. Centrale feiten-tabel:
-gedeprioriteerd (canon staat al in TokensContext + Glossary).
+## Studieboek-audit Fase 3 (didactiek) — DEELS afgerond juni 2026
+
+- Rekentools (4 interactieve widgets) live + live-geverifieerd + gepusht:
+  CacheBreakEvenWidget, ModelRouterWidget, RoiWidget (→ CostOpt),
+  LatencyBudgetWidget (→ Deployment). Wiskunde live nagerekend, klopt.
+- **Crash-fix (Categorie A):** Deployment-module crashte volledig op
+  `gen_ai is not defined` — losse JSX-expressie `{gen_ai.agent.name}` in de
+  OTEL-tekst i.p.v. in een string. Build ving dit niet. Nu gewrapt in InlineCode.
+- **Smoke-test:** alle 44 modules in de browser gecheckt — allemaal renderen,
+  geen lege/gecrashte modules, console schoon. (Methode: hash-sweep + main-len/heads.)
+
+**Nog te doen Fase 3-4:** ClaudeDeep herschrijven rond denk-shifts, Voice
+barge-in-sectie. Categorie-E speculatieve cijfers (benchmarks, salarissen, ROI,
+waarderingen) nog van "gerapporteerd/peildatum"-disclaimers voorzien. Centrale
+feiten-tabel: gedeprioriteerd (canon staat al in TokensContext + Glossary).
 
 ## Educatieve diepte-laag (toegevoegd juni 2026)
 
