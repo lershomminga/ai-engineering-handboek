@@ -49,9 +49,14 @@ Volledig audit-rapport: `STUDIEBOEK-AUDIT.md`. Fase 1 (4 blokken) uitgevoerd + g
   cache_control "auto" gemarkeerd als niet-gegarandeerd (alleen "ephemeral" gedoc.).
 - MultiAgent framework-stars hadden al inline-disclaimer.
 
-**Nog te doen (laatste Fase 3-rest):** ClaudeDeep herschrijven rond denk-shifts,
-Voice barge-in-sectie. Dit zijn de enige resterende items uit het hele audit-plan.
-Centrale feiten-tabel: gedeprioriteerd (canon staat al in TokensContext + Glossary).
+Voice barge-in-sectie: AFGEROND (juni 2026) — "Barge-in: de gebruiker mag je
+onderbreken" in de Voice-module (detectie/stop/cancel/context-truncate + code +
+echo-cancellatie + backchannel-tuning).
+
+**Nog te doen (laatste audit-item):** ClaudeDeep herschrijven rond denk-shifts
+(substantiële content-herstructurering van één module). Dit is het énige
+resterende item uit het hele audit-plan. Centrale feiten-tabel: gedeprioriteerd
+(canon staat al in TokensContext + Glossary).
 
 ## Educatieve diepte-laag (toegevoegd juni 2026)
 
