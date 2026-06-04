@@ -11,6 +11,20 @@
   hero), `index.html`, `public/favicon.svg`, `package.json`, `README.md`,
   `CLAUDE.md`. Eén vind-vervang-pass volstaat voor een nieuwe naam.
 
+## Studieboek-audit Fase 1 (correctheid) — AFGEROND juni 2026
+
+Volledig audit-rapport: `STUDIEBOEK-AUDIT.md`. Fase 1 (4 blokken) uitgevoerd + gepusht:
+- Blok 1: crash-bugs (Glossary-dupes, mcnemar→statsmodels, Agent-SDK import)
+- Blok 2: prijzen + modelnamen → één canon (Opus $5/$25, Sonnet $3/$15, Haiku $1/$5; sonnet-4-7→4-6)
+- Blok 3: verzonnen Claude-Code-feiten (hook-events 27→9, env-vars→stdin, subagent-velden, AgentSDK hooks)
+- Blok 4: consistentie + verouderd (GraphRAG, OTEL, Huyen, Fly, Hetzner, Swarm→Agents SDK, AI SDK v5, n8n scheduleTrigger, Cloudflare CPU, FineTuning 70B)
+
+**Nog te doen uit audit (Fase 2-4):** centrale feiten-tabel, term-linking-laag
+(Schemas/Glossary/Cases → definities), WorkflowChecklist aanvinkbaar, Deployment
+ontdubbelen, nieuwe rekentools (ROI/router/cache/latency), Exercises↔companion-code
+linken, ClaudeDeep herschrijven, Voice barge-in. Categorie-E speculatieve cijfers
+(benchmarks, salarissen, ROI) nog van "gerapporteerd/peildatum"-disclaimers voorzien.
+
 ## Educatieve diepte-laag (toegevoegd juni 2026)
 
 Vier leermechanismen live, getest en gepusht:
