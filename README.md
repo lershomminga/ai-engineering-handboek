@@ -2,11 +2,11 @@
 
 **Leer bouwen met AI — in het Nederlands, vanaf nul.** Het interactieve handboek waarmee iedereen leert werken met Claude en AI: geen programmeer-achtergrond nodig. Van je eerste prompt tot complete AI-systemen die echt werk uit handen nemen. Single-page React-app, geen backend nodig.
 
-![Vanaf nul](https://img.shields.io/badge/niveau-vanaf%20nul-orange) ![45 modules](https://img.shields.io/badge/modules-45-orange) ![Nederlandstalig](https://img.shields.io/badge/taal-NL-orange)
+![Vanaf nul](https://img.shields.io/badge/niveau-vanaf%20nul-orange) ![44 modules](https://img.shields.io/badge/modules-44-orange) ![Nederlandstalig](https://img.shields.io/badge/taal-NL-orange)
 
 ## Wat zit erin
 
-**45 modules** in 10 categorieën, ~19.000 regels inhoud:
+**44 modules** in 10 categorieën, ~19.000 regels inhoud:
 
 - **Fundamenten** — LLM's, Claude-modellen, tokens & context, API-keys, sampling
 - **Prompting** — basics (POWER, v0→v4), advanced (XML, CoT, self-consistency), 16 patterns, structured outputs, evals

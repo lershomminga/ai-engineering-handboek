@@ -4,7 +4,7 @@ Fijn dat je wilt bijdragen. Lees dit eerst — de architectuur is bewust ongebru
 
 ## Het grote principe: één file
 
-Alle 45 modules zitten in **`src/App.jsx`** (~19.000 regels). Dat is geen ongeluk:
+Alle 44 modules zitten in **`src/App.jsx`** (~19.400 regels). Dat is geen ongeluk:
 het houdt de drempel laag (geen build-magie, geen file-hopping) en maakt full-text
 zoeken triviaal. Niet opsplitsen zonder zwaarwegende reden.
 

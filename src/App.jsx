@@ -2370,7 +2370,7 @@ function Welcome({ theme, setActiveModule }) {
       {/* Stat strip */}
       <div className={`grid grid-cols-2 md:grid-cols-4 gap-3 mb-12 p-5 rounded-2xl border ${theme.borderSoft} ${theme.bgSoft}`}>
         {[
-          { value: "45", label: "Hoofdstukken" },
+          { value: "44", label: "Hoofdstukken" },
           { value: "18.000+", label: "Regels inhoud" },
           { value: "220+", label: "Glossary-termen" },
           { value: "Mei 2026", label: "Laatst bijgewerkt" },

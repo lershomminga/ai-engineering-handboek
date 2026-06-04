@@ -90,7 +90,7 @@ geen programmeer-achtergrond nodig". Geen persoonlijke auteursnaam toegevoegd
 Het hele **Master Expansion Plan is uitgevoerd, gecommit en gepusht** naar
 `origin/main` (`github.com/lershomminga/ai-engineering-handboek`). Stand:
 
-- 45 modules, ~19.400 regels in `src/App.jsx`
+- 44 modules, ~19.400 regels in `src/App.jsx`
 - Companion-code repo (`companion-code/`, 57 bestanden, 10 priority-modules)
 - Volledige interactieve laag: hash-routing, ⌘K-palette, quiz (96 vragen),
   AI-Tutor (BYOK), 3 thema's, in-page TOC, copy-knoppen, streak, JSON-sync

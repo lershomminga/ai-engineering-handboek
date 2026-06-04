@@ -26,7 +26,7 @@ Interactief, Nederlandstalig studieboek (single-page React app) waarmee iedereen
 ├── src/
 │   ├── main.jsx            # entry, mount React
 │   ├── index.css           # Tailwind directives + height:100%
-│   └── App.jsx             # ALLE inhoud in één file (~19.000 regels, 45 modules na Master Expansion Plan mei 2026)
+│   └── App.jsx             # ALLE inhoud in één file (~19.400 regels, 44 modules na Master Expansion Plan mei 2026)
 ├── companion-code/         # 57 paste-and-run code-voorbeelden, 10 priority-modules
 ├── tailwind.config.js
 ├── postcss.config.js

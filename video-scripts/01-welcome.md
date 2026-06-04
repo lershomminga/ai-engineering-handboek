@@ -9,7 +9,7 @@ Dit is je verkoop-video én je toon-zetter. Laag-risico om mee te beginnen.
 > ik je in 5 minuten zien wat erin zit en hoe je het gebruikt."
 >
 > *Toon:* de Welcome-module, scroll langzaam langs de hero + de stat-strip
-> (45 modules, 19.000+ regels, 220+ termen).
+> (44 modules, 19.000+ regels, 220+ termen).
 
 ## 📋 LEERDOELEN
 Na deze video weet de kijker: wat het handboek dekt, hoe te navigeren, en welk
