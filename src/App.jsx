@@ -13005,9 +13005,9 @@ Meest gebruikte events:
   UserPromptSubmit  bij elke nieuwe user prompt
   Stop              wanneer claude klaar is met antwoorden
 
-Volledig: SessionStart, SessionEnd, SubagentStop, PreCompact,
-PostCompact, Notification, PostToolUseFailure, PermissionRequest.
-Zie code.claude.com/docs/en/hooks voor de volledige lijst.`}</Pre>
+Verder: SessionStart, SessionEnd, SubagentStop, PreCompact, Notification.
+Tool-fouten? Die vang je in PostToolUse (geen apart failure-event).
+Zie code.claude.com/docs/en/hooks voor de actuele lijst.`}</Pre>
 
       <H2>MCP servers binnen Claude Code</H2>
       <P theme={theme}>
@@ -13356,41 +13356,29 @@ Maak het in een mermaid-diagram."`}</Pre>
 
       {/* === Sprint F.1 uitbreiding === */}
 
-      <H2>Complete Hooks Reference (~27 events)</H2>
+      <H2>Hooks Reference (de 9 events)</H2>
       <P theme={theme}>
-        Sinds Claude Code v2.1.141 zijn er 27+ hook-events. Hieronder de complete tabel met wanneer-fired, blockable, env-vars en typische use cases. Hooks staan in <InlineCode theme={theme}>settings.json</InlineCode> onder <InlineCode theme={theme}>hooks</InlineCode>.
+        Claude Code kent een vaste set hook-events. Hieronder de officiële lijst met wanneer-fired, blockable en typische use cases. Hooks staan in <InlineCode theme={theme}>settings.json</InlineCode> onder <InlineCode theme={theme}>hooks</InlineCode>.
       </P>
-      <Pre theme={theme} label="Hook-events · v2.1.141">{`Event                  Wanneer fired                    Blockable?  Typical use
-─────                  ─────────────                    ──────────  ────────────
-SessionStart           Begin van CLI-sessie             nee         Load extra context
-Setup                  Na SessionStart + config         nee         Eenmalige init
-SessionEnd             Sessie sluit                     nee         Cleanup, log save
-UserPromptSubmit       User typt een prompt + enter     ja (exit 2) Pre-processing
-UserPromptExpansion    @-mention expansie               nee         Custom resolvers
-Stop                   Assistant stopt met antwoorden   nee         Cleanup
-StopFailure            Stop maar met error              nee         Error reporting
-PreToolUse              Voor elke tool-call             ja          Permission gate
-PostToolUse            Na tool-call (success)           nee         Logging, validation
-PostToolUseFailure     Tool-call failed                 nee         Sentry alert
-PostToolBatch          Na batch van parallel tools      nee         Aggregate logging
-PermissionRequest      Tool vraagt user-approval        ja          Custom UI/auto-reply
-PermissionDenied       User weigerde permission         nee         Audit-log
-SubagentStart          Sub-agent gespawnd               nee         Trace-link parent/child
-SubagentStop           Sub-agent klaar                  nee         Cost-tracking per sub
-TeammateIdle           Cowork-collega is idle           nee         Team-coordination
-TaskCreated            Todos-tool: nieuwe taak          nee         Sync naar Linear/Jira
-TaskCompleted          Todos-tool: taak af              nee         Sync naar Linear/Jira
-InstructionsLoaded     CLAUDE.md (re-)loaded            nee         Reload custom config
-ConfigChange           settings.json gewijzigd          nee         Hot-reload
-CwdChanged             User wijzigde working-dir        nee         Project-switch
-FileChanged            File buiten Claude gewijzigd     nee         Conflict-detection
-WorktreeCreate         Nieuwe git-worktree              nee         Init dotfiles
-WorktreeRemove         Worktree verwijderd              nee         Cleanup
-PreCompact             Vóór context-compaction          ja          Markeer must-keep
-PostCompact            Na compaction                    nee         Verify keep-list
-Notification           Notificatie naar user            nee         Custom delivery
-Elicitation            Tool vraagt user-input mid-call  ja          Auto-fill answers
-ElicitationResult      User antwoordde elicitation      nee         Validation`}</Pre>
+      <Callout kind="warn">
+        <p className={`text-sm ${theme.textMuted}`}>
+          <strong className={theme.text}>Snel-veranderend:</strong> hooks worden actief uitgebreid. Check altijd <InlineCode theme={theme}>code.claude.com/docs</InlineCode> voor de actuele set — onderstaande zijn de stabiele, gedocumenteerde events.
+        </p>
+      </Callout>
+      <Pre theme={theme} label="Hook-events">{`Event             Wanneer fired                      Blockable?  Typical use
+─────             ─────────────                      ──────────  ────────────
+SessionStart      Begin van een CLI-sessie           nee         Load extra context
+UserPromptSubmit  User submit een prompt             ja (exit 2) Pre-processing / context-inject
+PreToolUse        Vóór elke tool-call                ja (exit 2) Permission gate, blokkeren
+PostToolUse       Na een tool-call                   nee         Logging, format, validation
+Notification      Claude stuurt een notificatie      nee         Custom delivery (Slack, desktop)
+Stop              Hoofdagent stopt met antwoorden    nee         Cleanup, vervolg-actie
+SubagentStop      Een subagent is klaar              nee         Cost-tracking per sub
+PreCompact        Vóór context-compaction            nee         Markeer must-keep
+SessionEnd        Sessie sluit                       nee         Cleanup, log save`}</Pre>
+      <P theme={theme}>
+        Failure-afhandeling zit in <InlineCode theme={theme}>PostToolUse</InlineCode> (de tool-result bevat de fout) — er is geen apart "failure"-event. Een hook <em>blokkeert</em> een actie door exit-code 2 te geven met een reden op stderr.
+      </P>
 
       <Pre theme={theme} label="settings.json — hooks volledig voorbeeld">{`{
   "hooks": {
@@ -13407,7 +13395,7 @@ ElicitationResult      User antwoordde elicitation      nee         Validation`}
     "PostToolUse": [
       {
         "matcher": "Edit(*.py|*.ts|*.tsx)",
-        "command": "npx prettier --write \${CLAUDE_TOOL_INPUT_FILE_PATH}"
+        "command": "jq -r '.tool_input.file_path' | xargs -r npx prettier --write"
       },
       {
         "matcher": "*",
@@ -13424,17 +13412,23 @@ ElicitationResult      User antwoordde elicitation      nee         Validation`}
 }`}</Pre>
 
       <P theme={theme}>
-        <strong className={theme.text}>Env-vars beschikbaar in elke hook:</strong>
+        <strong className={theme.text}>Hoe een hook data krijgt:</strong> Claude Code stuurt een JSON-object naar <strong className={theme.text}>stdin</strong> van je hook-command (niet via shell-env-vars). Parse het met <InlineCode theme={theme}>jq</InlineCode>. De enige env-var is <InlineCode theme={theme}>CLAUDE_PROJECT_DIR</InlineCode> (pad naar de project-root).
       </P>
-      <Pre theme={theme}>{`CLAUDE_PROJECT_DIR          # absolute pad naar project-root
-CLAUDE_SESSION_ID           # UUID van huidige sessie
-CLAUDE_TOOL_NAME            # bv. "Edit", "Bash", "mcp__github__create_issue"
-CLAUDE_TOOL_INPUT           # JSON-string van tool-input
-CLAUDE_TOOL_INPUT_FILE_PATH # alleen bij file-tools (Edit/Write/Read)
-CLAUDE_TOOL_DURATION_MS     # alleen in Post* hooks
-CLAUDE_USER                 # logged-in user (Cowork)
-CLAUDE_MODEL                # actief model voor deze call
-CLAUDE_CONTEXT_TOKENS       # huidige context-gebruik`}</Pre>
+      <Pre theme={theme} label="JSON op stdin (velden variëren per event)">{`{
+  "session_id":      "uuid-...",
+  "transcript_path": "/path/to/transcript.jsonl",
+  "cwd":             "/abs/project/dir",
+  "hook_event_name": "PostToolUse",
+  "tool_name":       "Edit",                  // bij PreToolUse/PostToolUse
+  "tool_input":      { "file_path": "...", "old_string": "..." },
+  "tool_response":   { ... }                  // alleen PostToolUse
+}
+
+# Lezen in je hook-command:
+file=$(jq -r '.tool_input.file_path')
+session=$(jq -r '.session_id')
+# CLAUDE_PROJECT_DIR is wél als env-var beschikbaar:
+echo "project: $CLAUDE_PROJECT_DIR"`}</Pre>
 
       <H2>Plugin format complete spec</H2>
       <P theme={theme}>
@@ -13567,34 +13561,26 @@ $ /skill test "review de UserController"
 ✗ Volledige spec van 50 pagina's in SKILL.md → splits naar bundle/references/
 ✗ scripts/ die curl|bash doen zonder pinning → supply-chain risico`}</Pre>
 
-      <H2>Subagent YAML — alle 15 frontmatter-velden</H2>
-      <Pre theme={theme} label=".claude/agents/pr-reviewer.md">{`---
+      <H2>Subagent YAML — frontmatter</H2>
+      <P theme={theme}>
+        Een subagent is een markdown-bestand in <InlineCode theme={theme}>.claude/agents/</InlineCode>: YAML-frontmatter + een body die de system prompt is. De <strong className={theme.text}>officieel gedocumenteerde velden</strong> zijn er maar een handvol — houd je daaraan.
+      </P>
+      <Pre theme={theme} label=".claude/agents/pr-reviewer.md — officiële velden">{`---
 name: pr-reviewer
 description: Reviews PRs voor security, correctness en style. Gebruik bij elke open PR.
-prompt: |
-  Je bent een senior code-reviewer. Analyseer elke diff op:
-  1. Security (SQL injection, XSS, secrets)
-  2. Correctness (edge cases, error handling)
-  3. Style (project conventions in CLAUDE.md)
-  Geef gestructureerde feedback met prioriteit.
-tools: [Read, Grep, Bash(git:*), Bash(gh:*)]
-disallowedTools: [Edit, Write, Bash(rm:*)]
-model: claude-opus-4-7
-permissionMode: default        # default | acceptEdits | bypassPermissions
-mcpServers: [github, slack]
-hooks:
-  PostToolUse:
-    - command: ./scripts/log-review.sh
-maxTurns: 20
-skills: [security-checklist, style-guide]
-initialPrompt: "Begin met git diff main...HEAD om scope te zien."
-memory: persistent             # persistent | ephemeral
-effort: high                   # low | medium | high | xhigh | max
-background: false              # true = draait async in background
-isolation: worktree            # worktree maakt eigen git-worktree
-color: orange                  # ui-tag-kleur
+tools: Read, Grep, Bash       # optioneel; weglaten = erft alle tools
+model: opus                   # optioneel: opus | sonnet | haiku | inherit
 ---
-`}</Pre>
+Je bent een senior code-reviewer. Analyseer elke diff op:
+1. Security (SQL injection, XSS, secrets)
+2. Correctness (edge cases, error handling)
+3. Style (project conventions in CLAUDE.md)
+Geef gestructureerde feedback met prioriteit.`}</Pre>
+      <Callout kind="warn">
+        <p className={`text-sm ${theme.textMuted}`}>
+          <strong className={theme.text}>Alleen <InlineCode theme={theme}>name</InlineCode>, <InlineCode theme={theme}>description</InlineCode>, <InlineCode theme={theme}>tools</InlineCode> en <InlineCode theme={theme}>model</InlineCode> zijn gegarandeerd.</strong> Velden als <InlineCode theme={theme}>permissionMode</InlineCode>, <InlineCode theme={theme}>maxTurns</InlineCode>, <InlineCode theme={theme}>hooks</InlineCode>, <InlineCode theme={theme}>isolation</InlineCode> of <InlineCode theme={theme}>color</InlineCode> zie je in de praktijk wel langskomen maar zijn niet stabiel gedocumenteerd — check <InlineCode theme={theme}>code.claude.com/docs</InlineCode> voor de actuele set. De system prompt staat in de <em>body</em>, niet in een <InlineCode theme={theme}>prompt:</InlineCode>-veld.
+        </p>
+      </Callout>
 
       <H2>Headless mode + CI patterns</H2>
       <P theme={theme}>
@@ -13920,22 +13906,17 @@ Week 5+ — onderhoud
         <li>• <strong className={theme.text}>Skill-attestation</strong> — laat skills via PR-process binnenkomen, met code-review en CHANGELOG. Geeft je een audit-trail buiten Cowork om.</li>
         <li>• <strong className={theme.text}>MCP-server attestation</strong> — alleen self-host of vetted publishers. Geen marketplace-installs zonder review.</li>
       </ul>
-      <Pre theme={theme} label="Eigen audit-logging via PostToolUse hook">{`# .claude/hooks.toml — geactiveerd voor elke user in workspace
-[[hooks]]
-event = "PostToolUse"
-matcher = "*"
-command = """
-  curl -sX POST $AUDIT_ENDPOINT \\
-    -H 'authorization: Bearer $AUDIT_TOKEN' \\
-    -d '{
-      "user":      "$CLAUDE_USER",
-      "session":   "$CLAUDE_SESSION_ID",
-      "tool":      "$CLAUDE_TOOL_NAME",
-      "input":     "$CLAUDE_TOOL_INPUT_HASH",
-      "duration":  "$CLAUDE_TOOL_DURATION_MS",
-      "ts":        "$(date -u +%FT%TZ)"
-    }'
-"""`}</Pre>
+      <Pre theme={theme} label="Eigen audit-logging via PostToolUse hook (JSON op stdin)">{`# settings.json — hook leest de event-JSON van stdin met jq
+{
+  "hooks": {
+    "PostToolUse": [{
+      "matcher": "*",
+      "command": "jq -c '{ tool: .tool_name, session: .session_id, input_hash: (.tool_input|@json|@base64), ts: now }' | curl -sX POST $AUDIT_ENDPOINT -H \\"authorization: Bearer $AUDIT_TOKEN\\" -d @-"
+    }]
+  }
+}
+# Claude Code stuurt de event-payload naar stdin; jq herstructureert
+# en pipet door naar je SIEM. $CLAUDE_PROJECT_DIR is de enige env-var.`}</Pre>
 
       <H2>Cost-tracking multi-tenant</H2>
       <P theme={theme}>
@@ -18649,27 +18630,28 @@ options = ClaudeAgentOptions(
     ],
 )`}</Pre>
 
-      <H2>Hooks — alle 7 types</H2>
+      <H2>Hooks</H2>
+      <P theme={theme}>
+        Dezelfde event-set als Claude Code (zie Claude Code-module): <InlineCode theme={theme}>PreToolUse</InlineCode>, <InlineCode theme={theme}>PostToolUse</InlineCode>, <InlineCode theme={theme}>UserPromptSubmit</InlineCode>, <InlineCode theme={theme}>Notification</InlineCode>, <InlineCode theme={theme}>Stop</InlineCode>, <InlineCode theme={theme}>SubagentStop</InlineCode>, <InlineCode theme={theme}>PreCompact</InlineCode>, <InlineCode theme={theme}>SessionStart/End</InlineCode>. Tool-fouten vang je in <InlineCode theme={theme}>PostToolUse</InlineCode> (de tool-result bevat de fout) — er is geen apart failure-event.
+      </P>
       <Pre theme={theme} label="Python · HookMatcher per event-type">{`from claude_agent_sdk import HookMatcher
 
 async def pre_tool_gate(tool_name, tool_input, ctx):
     if tool_name == "bash" and "rm -rf" in tool_input.get("command", ""):
         return {"deny": True, "reason": "Geen destructive commands"}
 
-async def post_tool_log(tool_name, tool_input, tool_result, duration_ms, ctx):
-    logger.info(f"{tool_name} ran in {duration_ms}ms")
-
-async def on_failure(tool_name, error, ctx):
-    sentry.capture_exception(error, tags={"tool": tool_name})
+async def post_tool_log(tool_name, tool_input, tool_result, ctx):
+    # tool_result bevat ook een eventuele fout — hier log je succes én falen
+    if tool_result.get("is_error"):
+        sentry.capture_message(f"{tool_name} faalde: {tool_result}")
+    else:
+        logger.info(f"{tool_name} ok")
 
 async def on_prompt_submit(prompt, ctx):
     return {"prompt": preprocess(prompt)}  # voeg context toe
 
 async def on_session_start(ctx):
     return {"context": load_user_context(ctx.user_id)}
-
-async def on_stop(ctx):
-    cleanup(ctx.session_id)
 
 async def on_pre_compact(history, ctx):
     return {"preserve": [m for m in history if m.tags.get("important")]}
@@ -18678,10 +18660,8 @@ options = ClaudeAgentOptions(
     hooks=[
         HookMatcher(event="PreToolUse", matcher="*", handler=pre_tool_gate),
         HookMatcher(event="PostToolUse", matcher="Edit(*.py)", handler=post_tool_log),
-        HookMatcher(event="PostToolUseFailure", matcher="*", handler=on_failure),
         HookMatcher(event="UserPromptSubmit", handler=on_prompt_submit),
         HookMatcher(event="SessionStart", handler=on_session_start),
-        HookMatcher(event="Stop", handler=on_stop),
         HookMatcher(event="PreCompact", handler=on_pre_compact),
     ],
 )`}</Pre>
