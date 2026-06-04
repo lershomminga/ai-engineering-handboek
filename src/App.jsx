@@ -12857,6 +12857,37 @@ function ClaudeDeep({ theme }) {
         Veel mensen kennen Claude alleen als chatbot op claude.ai. Maar Anthropic heeft een groeiend ecosysteem gebouwd: een web-chat met Projects en Artifacts, een open source CLI (Claude Code), shared workspaces voor teams (Cowork), cloud agents (Dispatch), IDE-integraties, MCP-connectors en computer use. Dit hoofdstuk geeft het volledige overzicht. De vervolg-hoofdstukken duiken diep in <em>Claude Code (CLI)</em> en in <em>Cowork / Dispatch / Cloud</em>.
       </P>
 
+      <H2>De vier denk-omslagen — van gebruiker naar bouwer</H2>
+      <P theme={theme}>
+        Voordat we de producten bekijken: het echte verschil tussen iemand die Claude "gebruikt" en iemand die ermee <em>bouwt</em>, zit niet in de tools maar in vier mentale omslagen. Wie deze vier shifts maakt, ziet elk product hieronder als gereedschap voor een bepaalde manier van werken — niet als losse apps. Herken jezelf in de linkerkant? Dan is dit hoofdstuk je brug naar rechts.
+      </P>
+      <Callout kind="success">
+        <p className={`text-sm ${theme.textMuted}`}>
+          <strong className={theme.text}>De kernrealisatie:</strong> je stopt met "een slimme assistent vragen om iets" en begint met <strong className={theme.text}>het systeem ontwerpen waarin Claude werkt</strong> — de context, de loop, de tools en de controlepunten. De prompt is niet meer het product; het systeem eromheen is dat.
+        </p>
+      </Callout>
+      <div className="grid md:grid-cols-2 gap-3 my-5">
+        <Card theme={theme} label="Shift 01" highlighted>
+          <h4 className="font-semibold mb-1">Chatten → context-engineeren</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Je stopt met het perfect verwoorden van losse vragen en begint met het <strong className={theme.text}>bouwen van de omgeving</strong>: system prompt, geüploade files, memory, tools. De vaardigheid verschuift van "goede zinnen typen" naar "de juiste context klaarzetten". <span className={theme.textSubtle}>Wat je anders doet: je investeert vooraf in een Project/CLAUDE.md i.p.v. elke chat opnieuw uit te leggen.</span></p>
+        </Card>
+        <Card theme={theme} label="Shift 02" highlighted>
+          <h4 className="font-semibold mb-1">Vraag/antwoord → agentic loop</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Eén vraag, één antwoord wordt een <strong className={theme.text}>lus</strong>: Claude plant, voert uit (tools), bekijkt het resultaat en itereert richting een doel. Je denkt in <strong className={theme.text}>doelen + grenzen</strong>, niet in losse prompts. <span className={theme.textSubtle}>Wat je anders doet: je geeft een opdracht met succescriterium en laat Claude de tussenstappen zetten.</span></p>
+        </Card>
+        <Card theme={theme} label="Shift 03">
+          <h4 className="font-semibold mb-1">Claude-als-product → Claude-als-laag</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Claude is niet langer de bestemming (claude.ai) maar een <strong className={theme.text}>component in jouw systeem</strong>: via de API, een SDK of MCP. Jij ontwerpt het geheel, Claude is één laag. <span className={theme.textSubtle}>Wat je anders doet: je vraagt "waar past een model-call in deze pipeline?" i.p.v. "wat typ ik in de chat?".</span></p>
+        </Card>
+        <Card theme={theme} label="Shift 04">
+          <h4 className="font-semibold mb-1">Zelf-doen → orchestreren + reviewen</h4>
+          <p className={`text-sm ${theme.textMuted}`}>Je rol verschuift van het werk zélf doen naar <strong className={theme.text}>delegeren, grenzen stellen en output beoordelen</strong>. Vertrouwen kalibreer je: wat mag autonoom, wat vereist een mens? <span className={theme.textSubtle}>Wat je anders doet: je bouwt review- en stop-momenten in (human-in-the-loop) i.p.v. blind op output te vertrouwen.</span></p>
+        </Card>
+      </div>
+      <P theme={theme}>
+        Houd deze vier in je achterhoofd terwijl je het landschap hieronder leest: claude.ai met Projects/Memory is shift 1, Claude Code en Cloud-agents zijn shift 2 en 4, de API + MCP zijn shift 3. Elke laag is gereedschap voor een andere manier van denken.
+      </P>
+
       <H2>Het hele Claude-product-landschap</H2>
       <Pre theme={theme}>{`+---------------------------------------------------------------+
 |                       CLAUDE.AI (web)                         |
