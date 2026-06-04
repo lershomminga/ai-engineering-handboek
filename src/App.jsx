@@ -10251,53 +10251,6 @@ function Deployment({ theme }) {
         ))}
       </div>
 
-      <H2>Monitoring & observability</H2>
-      <P theme={theme}>
-        Voor LLM-apps moet je 3 dingen meten naast normale APM:
-      </P>
-      <ul className={`space-y-2 text-sm ${theme.textMuted} list-none`}>
-        <li>• <strong className={theme.text}>Tokens per request</strong> (input + output) — voor kosten</li>
-        <li>• <strong className={theme.text}>Latency per stap</strong> — waar zit de bottleneck?</li>
-        <li>• <strong className={theme.text}>Output kwaliteit</strong> — gebruikers thumbs up/down, evals</li>
-      </ul>
-
-      <H3>Tools voor LLM-observability</H3>
-      <ul className={`space-y-2 text-sm ${theme.textMuted} list-none`}>
-        <li>• <strong className={theme.text}>Langfuse</strong> — open source, traces per agent-stap</li>
-        <li>• <strong className={theme.text}>LangSmith</strong> — van LangChain, betaald, zeer compleet</li>
-        <li>• <strong className={theme.text}>Helicone</strong> — proxy-based, makkelijk te integreren</li>
-        <li>• <strong className={theme.text}>Sentry</strong> — voor errors + performance traces</li>
-      </ul>
-
-      <H2>Kosten beheersen</H2>
-      <Pre theme={theme}>{`Tactiek                        Besparing      Hoe
------------------------------  -------------  -----------------------------
-Prompt caching                 5-10x          cache_control op herhalend deel
-Model routing                  3-10x          Haiku voor simpel, Opus voor moeilijk
-Batch API                      50%            non-urgent: gebruik /v1/messages/batches
-Tool search                    85% tool tokens  laad tools on-demand
-Output limits                  variabel       max_tokens conservatief zetten
-Streaming abort                variabel       stop generation als user wegklikt
-Embeddings cachen              ~100%          herbruik bij identieke input`}</Pre>
-
-      <H2>Veiligheid checklist</H2>
-      <ul className={`space-y-2 text-sm ${theme.textMuted} list-none`}>
-        <li>☐ API keys in env vars, nooit in code</li>
-        <li>☐ Rate limit per user (niet alleen op API-niveau)</li>
-        <li>☐ Input validatie + length limits (anders: prompt injection bommen)</li>
-        <li>☐ Output filtering bij user-facing content</li>
-        <li>☐ Logging zonder PII (anonimiseer waar mogelijk)</li>
-        <li>☐ Spend alerts in de Anthropic Console</li>
-        <li>☐ Aparte API keys voor dev / staging / prod</li>
-        <li>☐ Privacy policy update: vermeld dat user-input naar Anthropic gaat</li>
-      </ul>
-
-      <Callout kind="warn">
-        <p className={`text-sm ${theme.textMuted}`}>
-          <strong className={theme.text}>Prompt injection</strong> is de #1 dreiging. Als een gebruiker invoer kan geven die in een system prompt of tool-output terechtkomt, kan hij Claude proberen te misleiden. Tip: scheid altijd untrusted input met XML tags en instrueer Claude om instructies daaruit te negeren.
-        </p>
-      </Callout>
-
       <H2>Hosting opties — diepgaand</H2>
       <P theme={theme}>
         De keuze hangt af van: hoeveel verkeer, hoeveel ops-werk wil je doen, hoeveel data-controle nodig, en budget.
@@ -10477,6 +10430,12 @@ Schaduw-deploys                check          A/B nieuwe prompt zonder users te 
         <li>☐ Backup-policy voor DB + vector DB</li>
         <li>☐ Incident-response runbook</li>
       </ul>
+
+      <Callout kind="warn">
+        <p className={`text-sm ${theme.textMuted}`}>
+          <strong className={theme.text}>Prompt injection</strong> is de #1 dreiging. Als een gebruiker invoer kan geven die in een system prompt of tool-output terechtkomt, kan hij Claude proberen te misleiden. Tip: scheid altijd untrusted input met XML tags en instrueer Claude om instructies daaruit te negeren.
+        </p>
+      </Callout>
 
       <Callout kind="success">
         <p className={`text-sm ${theme.textMuted}`}>
