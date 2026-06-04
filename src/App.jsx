@@ -2024,7 +2024,7 @@ function getModuleContent(id, theme, glossarySearch, setGlossarySearch, setActiv
     case "cost-opt": return <CostOpt theme={theme} />;
     case "ecosystem": return <Ecosystem theme={theme} />;
     case "cases": return <Cases theme={theme} />;
-    case "workflow-checklist": return <WorkflowChecklist theme={theme} />;
+    case "workflow-checklist": return <WorkflowChecklist theme={theme} exerciseProgress={exerciseProgress} toggleExercise={toggleExercise} />;
     case "exercises": return <Exercises theme={theme} exerciseProgress={exerciseProgress} toggleExercise={toggleExercise} />;
     case "schemas": return <Schemas theme={theme} />;
     case "glossary": return <Glossary theme={theme} search={glossarySearch} setSearch={setGlossarySearch} />;
@@ -11804,7 +11804,23 @@ function Glossary({ theme, search, setSearch }) {
           <div key={t.term} className={`p-4 rounded-lg border ${theme.border} ${theme.bgAlt}`}>
             <div className="flex items-baseline justify-between mb-1 flex-wrap gap-2">
               <h3 className={`font-bold ${theme.accentText}`}>{t.term}</h3>
-              {t.related && <span className={`text-xs ${theme.textSubtle}`}>zie ook: {t.related}</span>}
+              {t.related && (
+                <span className={`text-xs ${theme.textSubtle}`}>
+                  zie ook:{" "}
+                  {t.related.split(",").map((r, i) => {
+                    const rel = r.trim();
+                    return (
+                      <span key={rel}>
+                        {i > 0 && ", "}
+                        <button
+                          onClick={() => { setSearch(rel); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                          className={`underline decoration-dotted decoration-orange-500/50 underline-offset-2 hover:${theme.accentText} transition`}
+                        >{rel}</button>
+                      </span>
+                    );
+                  })}
+                </span>
+              )}
             </div>
             <p className={`text-sm ${theme.textMuted}`}>{t.def}</p>
           </div>
@@ -16730,7 +16746,7 @@ Resultaten:
   );
 }
 
-function WorkflowChecklist({ theme }) {
+function WorkflowChecklist({ theme, exerciseProgress = {}, toggleExercise = () => {} }) {
   const laws = [
     { phase: 1, n: 1, title: "Wees direct & duidelijk", bad: "Help me hiermee.", good: "Schrijf een 5-bullet samenvatting van de key takeaways uit dit rapport." },
     { phase: 1, n: 2, title: "Geef context eerst", bad: "Schrijf een marketingplan.", good: "We lanceren een B2B SaaS voor accountantskantoren. Budget krap. Doel: 1.000 users in 90 dagen. Schrijf het marketingplan." },
@@ -16957,20 +16973,50 @@ function WorkflowChecklist({ theme }) {
       <P theme={theme}>
         Ruben Hassid's 70+ punten checklist — dichtgevochten van zijn dagelijkse Cowork-praktijk en hier per categorie vertaald. Niet alles is voor iedereen relevant, maar als je nooit eerder een ABOUT ME-bestand schreef of nooit Connectors uitzet als je ze niet nodig hebt, ligt hier nog flink wat winst.
       </P>
+      {(() => {
+        const totalItems = checklist.reduce((s, c) => s + c.items.length, 0);
+        const doneItems = checklist.reduce((s, c) => s + c.items.filter((_, i) => exerciseProgress[`wf-${c.title}-${i}`]).length, 0);
+        const pct = totalItems ? Math.round((doneItems / totalItems) * 100) : 0;
+        return (
+          <div className={`my-5 p-4 rounded-xl border ${theme.border} ${theme.bgAlt} flex items-center gap-4 print:hidden`}>
+            <div className={`text-xs font-mono uppercase tracking-wider ${theme.textMuted} shrink-0`}>Checklist-voortgang</div>
+            <div className={`flex-1 h-2 ${theme.bgSoft} rounded-full overflow-hidden`}>
+              <div className={`h-full ${theme.accent} transition-all`} style={{ width: `${pct}%` }} />
+            </div>
+            <div className="text-xs font-mono font-semibold tabular-nums shrink-0">{doneItems}/{totalItems} · {pct}%</div>
+          </div>
+        );
+      })()}
       <div className="space-y-4 my-5">
-        {checklist.map(cat => (
+        {checklist.map(cat => {
+          const chDone = cat.items.filter((_, i) => exerciseProgress[`wf-${cat.title}-${i}`]).length;
+          return (
           <div key={cat.title} className={`p-4 rounded-xl border ${theme.border} ${theme.bgCard}`}>
-            <h3 className={`font-semibold mb-3 ${theme.accentText}`}>{cat.title}</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className={`font-semibold ${theme.accentText}`}>{cat.title}</h3>
+              <span className={`text-[10px] font-mono ${theme.textSubtle} tabular-nums`}>{chDone}/{cat.items.length}</span>
+            </div>
             <ul className="space-y-2 text-sm list-none">
-              {cat.items.map((item, i) => (
+              {cat.items.map((item, i) => {
+                const key = `wf-${cat.title}-${i}`;
+                const done = !!exerciseProgress[key];
+                return (
                 <li key={i} className="flex items-start gap-2">
-                  <span className={`mt-0.5 inline-block w-4 h-4 border ${theme.border} rounded flex-shrink-0`}></span>
-                  <span className={theme.textMuted}><span dangerouslySetInnerHTML={{ __html: item.replace(/\*\*(.*?)\*\*/g, `<strong class="${theme.text.replace('text-', 'text-')}">$1</strong>`) }} /></span>
+                  <button
+                    onClick={() => toggleExercise(key)}
+                    aria-label={done ? "Markeer als niet-gedaan" : "Markeer als gedaan"}
+                    className={`mt-0.5 shrink-0 w-4 h-4 rounded border flex items-center justify-center transition print:hidden ${done ? "bg-emerald-600 border-emerald-600" : `${theme.border} ${theme.bgCard} hover:border-orange-500`}`}
+                  >
+                    {done && <Check className="w-3 h-3 text-white" />}
+                  </button>
+                  <span className={done ? `line-through ${theme.textSubtle}` : theme.textMuted}><span dangerouslySetInnerHTML={{ __html: item.replace(/\*\*(.*?)\*\*/g, `<strong class="${theme.text.replace('text-', 'text-')}">$1</strong>`) }} /></span>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           </div>
-        ))}
+          );
+        })}
       </div>
       <Callout kind="warn">
         <p className={`text-sm ${theme.textMuted}`}>
@@ -17259,6 +17305,20 @@ fast-paced world  (skip — cliché)`}</Pre>
   );
 }
 
+// Hoofdstuk → bijbehorende companion-code-map (paste-and-run startpunt)
+const EXERCISE_REPOS = {
+  "Fundamenten": "companion-code/01-fundamentals",
+  "Tokens & Context": "companion-code/01-fundamentals",
+  "Prompting Advanced": "companion-code/02-prompting-advanced",
+  "Tools & MCP": "companion-code/04-tools-mcp",
+  "Agents": "companion-code/05-agents",
+  "RAG": "companion-code/06-rag",
+  "Evals": "companion-code/07-evals",
+  "Backend": "companion-code/08-backend-fastapi",
+  "Cost Optimization": "companion-code/09-cost-routing",
+  "Eindproject": "companion-code/10-capstone-support-agent",
+};
+
 function Exercises({ theme, exerciseProgress = {}, toggleExercise = () => {} }) {
   const exercises = [
     {
@@ -17480,6 +17540,12 @@ function Exercises({ theme, exerciseProgress = {}, toggleExercise = () => {} }) 
                   <span className={`px-2 py-0.5 text-xs rounded-full border ${levelColor}`}>{ex.level}</span>
                 </div>
               </div>
+              {EXERCISE_REPOS[ex.chapter] && (
+                <div className={`mb-2 -mt-1 text-xs font-mono ${theme.textSubtle}`}>
+                  <Code className="w-3 h-3 inline-block mr-1 -mt-0.5" aria-hidden="true" />
+                  paste-and-run code: <InlineCode theme={theme}>{EXERCISE_REPOS[ex.chapter]}</InlineCode>
+                </div>
+              )}
               <ul className={`space-y-2 ${theme.textMuted} text-sm`}>
                 {ex.tasks.map((t, i) => {
                   const key = `${ex.chapter}-${i}`;
